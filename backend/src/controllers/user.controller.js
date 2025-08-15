@@ -66,3 +66,24 @@ exports.login= async (req,res)=>{
         res.status(500).send('Internal Server Error');
     }
 }
+
+exports.createBase= async (req,res)=>{
+    try{
+        const data=req.body;
+        db.query('insert into bases set ?',data,(err,result)=>{
+            if(err){
+                console.log('Error creating base:', err);
+                return res.status(500).send('Internal Server Error');
+            }
+            if(result.affectedRows>0){
+                return res.status(200).send('Base created successfully');
+            }
+            res.status(400).send('Base not created');
+        })
+
+    }
+    catch(err){
+        console.error('Error creating base:', err);
+        res.status(500).send('Internal Server Error');
+    }
+}
