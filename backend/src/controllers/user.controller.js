@@ -42,6 +42,7 @@ exports.createUser = async (req,res)=>{
 
 exports.login= async (req,res)=>{
     try{
+        console.log(req.body);
         const {email,password}=req.body;
         db.query('select * from users where email = ?',[email], async (err,result)=>{
             if(err){
@@ -49,12 +50,12 @@ exports.login= async (req,res)=>{
                 return res.status(500).send('Internal Server Error');
             }
             if(result.length==0){
-                return res.status(400).alert('User not found');
+                return res.status(400).send('User not found');
             }
             const user = result[0].password_hash;
             const isMatch = await bcryptjs.compare(password,user);
             if(!isMatch){
-                return res.status(400).alert('Invalid credentials');
+                return res.status(400);
             }
             else{
                 return res.status(200).send('Login successful');
