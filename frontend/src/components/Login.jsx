@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-const Login =()=>{
+const Login =({handeleLoginSystem})=>{
     const [user,setUser]=useState({
         email:'',
         password:''
@@ -15,6 +15,7 @@ const Login =()=>{
             const response = await axios.post('http://localhost:3000/user/login',user);
             if(response.status === 200){
                 alert('Login sucessfully');
+                handeleLoginSystem();
             }
             else if(response.status == 400){
                 alert('Invalid credentials');
