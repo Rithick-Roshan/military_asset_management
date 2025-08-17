@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
+import axios from 'axios';
 import { 
   Plus, Search, Filter, Eye, Edit, Trash2, 
   Package, MapPin, Calendar, User, AlertTriangle,
@@ -10,113 +11,41 @@ const Assets = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedBase, setSelectedBase] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
+  const [assestArray, setAssestArray] = useState([]);
 
-  const assets = [
-    {
-      id: 1,
-      serialNumber: 'M4-2024-001',
-      name: 'M4A1 Carbine',
-      category: 'Weapons',
-      subcategory: 'Rifles',
-      base: 'Fort Liberty',
-      quantity: 150,
-      assigned: 120,
-      available: 30,
-      status: 'Available',
-      condition: 'Excellent',
-      lastMaintenance: '2024-02-15',
-      nextMaintenance: '2024-05-15',
-      purchaseDate: '2024-01-15',
-      value: 800,
-      assignedTo: null
-    },
-    {
-      id: 2,
-      serialNumber: 'HV-2024-001',
-      name: 'Humvee',
-      category: 'Vehicles',
-      subcategory: 'Tactical Vehicles',
-      base: 'Fort Liberty',
-      quantity: 25,
-      assigned: 20,
-      available: 5,
-      status: 'Assigned',
-      condition: 'Good',
-      lastMaintenance: '2024-03-01',
-      nextMaintenance: '2024-06-01',
-      purchaseDate: '2024-02-01',
-      value: 150000,
-      assignedTo: 'Alpha Company'
-    },
-    {
-      id: 3,
-      serialNumber: 'AM-2024-001',
-      name: '5.56mm Ammunition',
-      category: 'Ammunition',
-      subcategory: 'Rifle Rounds',
-      base: 'Camp Pendleton',
-      quantity: 5000,
-      assigned: 0,
-      available: 5000,
-      status: 'Available',
-      condition: 'Excellent',
-      lastMaintenance: null,
-      nextMaintenance: null,
-      purchaseDate: '2024-01-20',
-      value: 0.75,
-      assignedTo: null
-    },
-    {
-      id: 4,
-      serialNumber: 'NV-2024-001',
-      name: 'Night Vision Goggles',
-      category: 'Electronics',
-      subcategory: 'Optics',
-      base: 'JBLM',
-      quantity: 50,
-      assigned: 35,
-      available: 15,
-      status: 'Available',
-      condition: 'Good',
-      lastMaintenance: '2024-02-20',
-      nextMaintenance: '2024-08-20',
-      purchaseDate: '2024-02-10',
-      value: 3500,
-      assignedTo: null
-    },
-    {
-      id: 5,
-      serialNumber: 'RD-2024-001',
-      name: 'Radio Set',
-      category: 'Communications',
-      subcategory: 'Tactical Radio',
-      base: 'Fort Hood',
-      quantity: 100,
-      assigned: 80,
-      available: 20,
-      status: 'Under Maintenance',
-      condition: 'Fair',
-      lastMaintenance: '2024-03-10',
-      nextMaintenance: '2024-04-10',
-      purchaseDate: '2024-01-25',
-      value: 2500,
-      assignedTo: null
+  const takeAssest = async () =>{
+    try{
+        const response = await axios.get("http://localhost:3000/asset/getall");
+        if(response.status === 200){
+          setAssestArray(response.data);
+          console.log(response.data); 
+        }  
     }
-  ];
+    catch(err){
+      alert("failed to fetch assests"+err);
+    }
+  }
 
-  const categories = ['All', 'Weapons', 'Vehicles', 'Ammunition', 'Electronics', 'Communications', 'Medical'];
-  const bases = ['All', 'Fort Liberty', 'Camp Pendleton', 'JBLM', 'Fort Hood'];
-  const statuses = ['All', 'Available', 'Assigned', 'Under Maintenance', 'Decommissioned'];
+  useEffect(() =>{
+      takeAssest();
+  },[]);
+ 
+  useEffect(()=>{
+       console.log("assestArray updated", assestArray);
+  },[assestArray]);
 
-  const filteredAssets = assets.filter(asset => {
-    const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         asset.serialNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || asset.category === selectedCategory;
-    const matchesBase = selectedBase === 'All' || asset.base === selectedBase;
-    const matchesStatus = selectedStatus === 'All' || asset.status === selectedStatus;
-    
-    return matchesSearch && matchesCategory && matchesBase && matchesStatus;
-  });
+  const categories = ['All','Others', 'Weapons', 'Vehicles', 'Ammunition', 'Electronics', 'Communications', 'Medical'];
+  const current_statuses = ['All','Available', 'Assigned', 'Under Maintenance', 'Decommissioned'];
+
+ const filteredAssets = assestArray.filter(asset => {
+  const matchesSearch = asset.asset_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       asset.asset_serial_number?.toLowerCase().includes(searchTerm.toLowerCase());
+  const matchesCategory = selectedCategory === 'All' || asset.category === selectedCategory;
+  const matchesBase = selectedBase === 'All' || asset.base_name === selectedBase;
+  const matchesStatus = selectedStatus === 'All' || asset.current_status === selectedStatus;
+  
+  return matchesSearch && matchesCategory && matchesBase && matchesStatus;
+});
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -138,16 +67,6 @@ const Assets = () => {
     }
   };
 
-  const getMaintenanceStatus = (nextMaintenance) => {
-    if (!nextMaintenance) return null;
-    const next = new Date(nextMaintenance);
-    const now = new Date();
-    const daysUntil = Math.ceil((next - now) / (1000 * 60 * 60 * 24));
-    
-    if (daysUntil < 0) return { status: 'overdue', color: 'text-red-600', text: 'Overdue' };
-    if (daysUntil <= 30) return { status: 'due', color: 'text-yellow-600', text: `Due in ${daysUntil}d` };
-    return { status: 'scheduled', color: 'text-green-600', text: `${daysUntil}d` };
-  };
 
   return (
     <div className="space-y-6">
@@ -160,15 +79,10 @@ const Assets = () => {
             <p className="text-gray-600 mt-1">Manage and track all military assets across bases</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Upload className="w-4 h-4" />
-              Import
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button 
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={() => setCurrentPage('addAsset')}
+            >
               <Plus className="w-4 h-4" />
               Add Asset
             </button>
@@ -185,7 +99,7 @@ const Assets = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Total Assets</p>
-              <p className="text-xl font-bold text-gray-900">{assets.length}</p>
+              <p className="text-xl font-bold text-gray-900">{assestArray.length}</p>
             </div>
           </div>
         </div>
@@ -197,7 +111,7 @@ const Assets = () => {
             <div>
               <p className="text-sm text-gray-600">Available</p>
               <p className="text-xl font-bold text-gray-900">
-                {assets.filter(a => a.status === 'Available').length}
+                {assestArray.filter(a => a.current_status === 'Available').length}
               </p>
             </div>
           </div>
@@ -210,87 +124,13 @@ const Assets = () => {
             <div>
               <p className="text-sm text-gray-600">Assigned</p>
               <p className="text-xl font-bold text-gray-900">
-                {assets.filter(a => a.status === 'Assigned').length}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Maintenance Due</p>
-              <p className="text-xl font-bold text-gray-900">
-                {assets.filter(a => {
-                  if (!a.nextMaintenance) return false;
-                  const maintenance = getMaintenanceStatus(a.nextMaintenance);
-                  return maintenance && (maintenance.status === 'due' || maintenance.status === 'overdue');
-                }).length}
+                {assestArray.filter(a => a.current_status === 'Assigned').length}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filters and Search */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex flex-col lg:flex-row gap-4">
-          
-          {/* Search Bar */}
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search assets by name or serial number..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Category Filter */}
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
-
-          {/* Base Filter */}
-          <select
-            value={selectedBase}
-            onChange={(e) => setSelectedBase(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {bases.map(base => (
-              <option key={base} value={base}>{base}</option>
-            ))}
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {statuses.map(status => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Filter className="w-4 h-4" />
-            More Filters
-          </button>
-        </div>
-      </div>
 
       {/* Assets Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -322,10 +162,9 @@ const Assets = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAssets.map((asset) => {
-                const maintenanceStatus = getMaintenanceStatus(asset.nextMaintenance);
+              {assestArray.map((asset) => {
                 return (
-                  <tr key={asset.id} className="hover:bg-gray-50">
+                  <tr key={asset.asset_id} className="hover:bg-gray-50">
                     
                     {/* Asset Details */}
                     <td className="px-6 py-4">
@@ -334,9 +173,9 @@ const Assets = () => {
                           <Package className="w-5 h-5 text-gray-600" />
                         </div>
                         <div>
-                          <div className="font-medium text-gray-900">{asset.name}</div>
-                          <div className="text-sm text-gray-500">{asset.serialNumber}</div>
-                          <div className="text-xs text-gray-400">{asset.subcategory}</div>
+                          <div className="font-medium text-gray-900">{asset.asset_name}</div>
+                          <div className="text-sm text-gray-500">{asset.asset_serial_number}</div>
+              
                         </div>
                       </div>
                     </td>
@@ -346,23 +185,18 @@ const Assets = () => {
                       <div className="space-y-1">
                         <div className="flex items-center gap-1 text-sm text-gray-600">
                           <MapPin className="w-3 h-3" />
-                          {asset.base}
+                          {asset.base_name}
                         </div>
-                        <span className={`inline-flex px-2 py-1 text-xs rounded-full ${getStatusColor(asset.status)}`}>
-                          {asset.status}
+                        <span className={`inline-flex px-2 py-1 text-xs rounded-full ${getStatusColor(asset.current_status)}`}>
+                          {asset.current_status}
                         </span>
-                        {asset.assignedTo && (
-                          <div className="text-xs text-gray-500">
-                            Assigned to: {asset.assignedTo}
-                          </div>
-                        )}
                       </div>
                     </td>
 
                     {/* Quantity */}
                     <td className="px-6 py-4">
                       <div className="space-y-1">
-                        <div className="font-medium text-gray-900">{asset.quantity} total</div>
+                        <div className="font-medium text-gray-900">{asset.total_quantity} total</div>
                         <div className="text-sm text-gray-600">
                           <span className="text-green-600">{asset.available} available</span>
                           {asset.assigned > 0 && (
@@ -374,34 +208,18 @@ const Assets = () => {
 
                     {/* Condition */}
                     <td className="px-6 py-4">
-                      <div className={`font-medium ${getConditionColor(asset.condition)}`}>
-                        {asset.condition}
+                      <div className={`font-medium ${getConditionColor(asset.condition_status)}`}>
+                        {asset.condition_status}
                       </div>
-                    </td>
-
-                    {/* Maintenance */}
-                    <td className="px-6 py-4">
-                      {maintenanceStatus ? (
-                        <div>
-                          <div className={`text-sm font-medium ${maintenanceStatus.color}`}>
-                            {maintenanceStatus.text}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            Next: {asset.nextMaintenance}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-sm text-gray-400">N/A</span>
-                      )}
                     </td>
 
                     {/* Value */}
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">
-                        ${(asset.value * asset.quantity).toLocaleString()}
+                        ${asset.purchase_price}
                       </div>
                       <div className="text-xs text-gray-500">
-                        ${asset.value}/unit
+                        ${asset.purchase_price/asset.total_quantity}/unit
                       </div>
                     </td>
 
@@ -430,7 +248,7 @@ const Assets = () => {
         <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing {filteredAssets.length} of {assets.length} assets
+              Showing {filteredAssets.length} of {assestArray.length} assets
             </div>
             <div className="flex items-center gap-2">
               <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-white transition-colors">

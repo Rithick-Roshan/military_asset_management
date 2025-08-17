@@ -4,6 +4,10 @@ exports.createAsset = async (req,res)=>{
         const data= req.body;
         db.query('insert into assets set ?',data,(err,result)=>{
             if(err){
+                if(err.code === 'ER_DUP_ENTRY'){
+                    console.error('Duplicate entry error:', err);
+                    return res.status(409).send('Asset already exists');
+                }
                 console.log('Error creating asset:', err);
                 return res.status(500).send('Internal Server Error');
             }
@@ -21,7 +25,7 @@ exports.createAsset = async (req,res)=>{
 
 exports.getAssets = async (req, res) => {
     try{
-         db.query('select * from assets',(err,result)=>{
+         db.query('select * from assets as a  join bases as b on b.base_id=a.base_id',(err,result)=>{
             if(err){
                 console.log('Error fetching assets:', err);
                 return res.status(500).send('Internal Server Error');

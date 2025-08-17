@@ -11,11 +11,16 @@ import Assignments from './components/pages/Assignments'
 import UsersPage from './components/pages/Users'
 import AddUser from './components/pages/AddUser'
 import AddBase from './components/pages/AddBase'
+import EditBase from './components/pages/EditBase'
+import EditUser from './components/pages/EditUser'
+import NewPurchase from './components/pages/NewPerchase'
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isLoggedIn,setLoggedIn]=useState(false);
+  const [baseId,setBaseId] = useState(null);
+  const [userId,setUserId] = useState(null);
 
    function handeleLoginSystem(){
     setLoggedIn(true);
@@ -40,12 +45,16 @@ function App() {
           />
           {currentPage === "home" && <HomeDashboard />}
           {currentPage === "assets" && <Assets />}
-          {currentPage === "purchases" && <Purchases />}
+          {currentPage === "purchases" && <Purchases setCurrentPage={setCurrentPage} />}
           {currentPage ==="expenditures" && <Expenditures />}
-          {currentPage ==="assignments" && <Assignments />}
-          {currentPage ==="users" && <UsersPage  setCurrentPage={setCurrentPage}/>}
+          {currentPage ==="assignments" && <Assignments  />}
+          {currentPage ==="users" && <UsersPage  setCurrentPage={setCurrentPage} setBaseId={setBaseId} setUserId={setUserId} />}
           {currentPage === "addUser" && <AddUser setCurrentPage={setCurrentPage} />}
           {currentPage === "addBase" && <AddBase setCurrentPage={setCurrentPage} />}
+          {currentPage === "editBase" && <EditBase setCurrentPage={setCurrentPage} baseId={baseId}/>}
+          {currentPage === "editUser" && <EditUser setCurrentPage={setCurrentPage} userId={userId} />}
+          {currentPage === "newPurchase" && <NewPurchase setCurrentPage={setCurrentPage} />}
+          
     </>
   )
 }

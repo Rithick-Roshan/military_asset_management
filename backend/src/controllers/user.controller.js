@@ -130,3 +130,85 @@ exports.getUsers = async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 }
+
+exports.updateBase = async (req,res) =>{
+     try{
+            const data = req.body;
+            console.log('Received data for update:', data);
+            db.query('update bases set ? where base_id = ?', [data, data.base_id], (err, result) => {
+                if (err) {
+                    console.log('Error updating base:', err);
+                    return res.status(500).send('Internal Server Error');
+                }
+                if (result.affectedRows > 0) {
+                    return res.status(200).send('Base updated successfully');
+                }
+                res.status(400).send('Base not updated');
+            }); 
+     }catch(err){
+         console.error('Error updating base:', err);
+         res.status(500).send('Internal Server Error');
+     }
+}
+
+exports.deleteBase = async (req, res) =>{
+    try{
+         const {base_id} = req.body;
+         console.log(base_id);
+         db.query('delete from bases where base_id = ?', [base_id], (err, result) => {
+             if (err) {
+                 console.log('Error deleting base:', err);
+                 return res.status(500).send('Internal Server Error');
+             }
+             if (result.affectedRows > 0) {
+                 return res.status(200).send('Base deleted successfully');
+             }
+             res.status(404).send('Base not found');
+         });
+    }
+    catch(err){
+        console.error('Error deleting base:', err);
+        res.status(500).send('Internal Server Error');
+    }   
+}
+
+exports.updateUser = async (req, res) => {
+    try {
+        const data = req.body;
+        console.log('Received data for user update:', data);
+        data.status = data.status === 'Active' ? true : false; 
+        db.query('UPDATE users SET ? WHERE user_id = ?', [data, data.user_id], (err, result) => {
+            if (err) {
+                console.log('Error updating user:', err);
+                return res.status(500).send('Internal Server Error');
+            }
+            if (result.affectedRows > 0) {
+                return res.status(200).send('User updated successfully');
+            }
+            res.status(400).send('User not updated');
+        });
+    } catch (err) {
+        console.error('Error updating user:', err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+exports.deleteUser = async (req, res) => {
+    try {
+        const { user_id } = req.body;
+        console.log('Received user_id for deletion:', user_id);
+        db.query('DELETE FROM users WHERE user_id = ?', [user_id], (err, result) => {
+            if (err) {
+                console.log('Error deleting user:', err);
+                return res.status(500).send('Internal Server Error');
+            }
+            if (result.affectedRows > 0) {
+                return res.status(200).send('User deleted successfully');
+            }
+            res.status(404).send('User not found');
+        });
+    } catch (err) {
+        console.error('Error deleting user:', err);
+        res.status(500).send('Internal Server Error');
+    }
+}

@@ -6,11 +6,15 @@ import {
   Download, Upload, FileText, Truck
 } from 'lucide-react';
 
-const Purchases = () => {
+const Purchases = ({setCurrentPage}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedBase, setSelectedBase] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
+ 
+  const HandleNewPurchase = ()=>{
+      setCurrentPage("newPurchase");
+  }
 
   const purchases = [
     {
@@ -226,7 +230,10 @@ const Purchases = () => {
               <Download className="w-4 h-4" />
               Export
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button 
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={HandleNewPurchase}
+            >
               <Plus className="w-4 h-4" />
               New Purchase Order
             </button>

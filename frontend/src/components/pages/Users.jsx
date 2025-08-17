@@ -2,18 +2,7 @@ import {use, useEffect,useState} from 'react';
 import { Users, Eye, Edit, Trash2, Plus, Filter,Shield } from 'lucide-react';
 import axios from 'axios';
 
-// Sample users data
-const usersData = [
-  { id: 1, name: 'John Administrator', role: 'Admin', base: 'All Bases', email: 'admin@military.gov', status: 'Active' },
-  { id: 2, name: 'Sarah Johnson', role: 'Base Commander', base: 'Fort Liberty', email: 'commander1@military.gov', status: 'Active' },
-  { id: 3, name: 'Emily Davis', role: 'Logistics Officer', base: 'Fort Liberty', email: 'logistics1@military.gov', status: 'Active' },
-  { id: 4, name: 'Michael Chen', role: 'Supply Sergeant', base: 'Camp Pendleton', email: 'supply1@military.gov', status: 'Active' },
-  { id: 5, name: 'Robert Wilson', role: 'Logistics Officer', base: 'JBLM', email: 'logistics2@military.gov', status: 'Inactive' },
-  { id: 6, name: 'Jennifer Martinez', role: 'Inventory Specialist', base: 'Fort Liberty', email: 'inventory1@military.gov', status: 'Active' },
-  { id: 7, name: 'David Thompson', role: 'Base Commander', base: 'Camp Pendleton', email: 'commander2@military.gov', status: 'Active' }
-];
-
-const UsersPage = ({setCurrentPage}) => {
+const UsersPage = ({setCurrentPage,setBaseId,setUserId}) => {
  const [baseDataArray, setBaseDataArray] = useState([]);
  const [usersDataArray, setUsersDataArray] = useState([]); 
  const takeUsersData = async () =>{
@@ -59,23 +48,54 @@ const UsersPage = ({setCurrentPage}) => {
     setCurrentPage('addUser'); 
     
   };
+
+  const handleUserEdit =(userId) =>{
+     setUserId(userId);
+     setCurrentPage('editUser');
+  }
+
+  const handleUserDelete = async (user_id) => {
+    console.log('Delete user:', user_id);
+    try{
+        const response = await axios.delete(`http://localhost:3000/user/deleteuser`,{data:{user_id}});
+        if(response.status === 200){
+            alert('User deleted successfully');
+            takeUsersData(); 
+        } else {
+            alert('Failed to delete user');
+        }
+    }
+    catch(err){
+      alert("Error deleting user");
+      console.log(err);
+    }
+  }
+
 const handleAddBase = () => {
   console.log('Add new base');
   setCurrentPage('addBase');  
 };
-  const handleView = (userId) => {
-    console.log('View user:', userId);
-    // Add view logic here
+
+  const handleBaseEdit = (baseId) => {
+    setCurrentPage('editBase');
+    setBaseId(baseId);
   };
 
-  const handleEdit = (userId) => {
-    console.log('Edit user:', userId);
-    // Add edit logic here
-  };
-
-  const handleDelete = (userId) => {
-    console.log('Delete user:', userId);
-    // Add delete logic here
+  const handleBaseDelete = async (base_id) => {
+    console.log('Delete user:', base_id);
+    try{
+        const response = await axios.delete(`http://localhost:3000/user/deletebase`,{data:{base_id}});
+        if(response.status === 200){
+            alert('Base deleted successfully');
+            takeBaseData(); 
+        } else {
+            alert('Failed to delete base');
+        }
+    }
+    catch(err){
+      alert("Error deleting base");
+      console.log(err);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -90,10 +110,6 @@ const handleAddBase = () => {
         return 'bg-blue-100 text-blue-800';
       case 'Logistics Officer':
         return 'bg-orange-100 text-orange-800';
-      case 'Supply Sergeant':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Inventory Specialist':
-        return 'bg-indigo-100 text-indigo-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -183,21 +199,14 @@ const handleAddBase = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <button 
-                          onClick={() => handleView(user.id)}
-                          className="text-blue-600 hover:text-blue-900 p-1"
-                          title="View"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleEdit(user.id)}
+                          onClick={() => handleUserEdit(user.user_id)}
                           className="text-green-600 hover:text-green-900 p-1"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => handleUserDelete(user.user_id)}
                           className="text-red-600 hover:text-red-900 p-1"
                           title="Delete"
                         >
@@ -213,6 +222,7 @@ const handleAddBase = () => {
         </div>
       </div>
 
+       {/* Base Management Section */}
       <div className="max-w-7xl mx-auto mt-4">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -273,21 +283,14 @@ const handleAddBase = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <button 
-                          onClick={() => handleView(user.id)}
-                          className="text-blue-600 hover:text-blue-900 p-1"
-                          title="View"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleEdit(user.id)}
+                          onClick={() => handleBaseEdit(base.base_id)}
                           className="text-green-600 hover:text-green-900 p-1"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => handleBaseDelete(base.base_id)}
                           className="text-red-600 hover:text-red-900 p-1"
                           title="Delete"
                         >
