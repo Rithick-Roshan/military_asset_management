@@ -15,8 +15,7 @@ create table bases(
       base_id int auto_increment primary key,
       base_name varchar(100) not null,
       base_code varchar(10) unique not null,
-      location varchar(200) not null,
-      commander_id int
+      location varchar(200) not null
 );
 
 
@@ -85,6 +84,17 @@ create table expenditures(
 );
 
 
+select * from users;
+alter table bases
+drop column commander_id;
 
+select * from bases;
+select * from assets;
+select * from transfers;
 
+update users
+set  base_id=1
+where user_id=1;
 
+DELETE FROM users
+WHERE user_id = 5;

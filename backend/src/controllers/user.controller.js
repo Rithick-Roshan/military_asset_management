@@ -3,23 +3,24 @@ const db = require('../util/db');
 exports.createUser = async (req,res)=>{
     try{
         const data=req.body;
+        console.log('Received data:', data);
         db.query('select * from users where email = ?',[data.email], async (err, result)=>{
             if(err){
                 console.log('Error checking user:', err);
                 return res.status(500).send('Internal Server Error');
             }
             if(result.length>0){
-                return result.status(400).alert('User already exits');
+                return res.status(409).send('User already exits');
             }
-            const hash_password= await bcryptjs.hash(data.password,10);
+            const hash_password= await bcryptjs.hash(data.password_hash,10);
             const status= data.status=='Active'?true:false;
             const userData = {
-                username: data.name,
+                username: data.username,
                 email: data.email,
                 password_hash: hash_password,
                 role: data.role,
                 status: status,
-                base_id: data.baseid
+                base_id: data.base_id
             };
             db.query('insert into users set ?',userData,(err,result)=>{
                 if(err){
@@ -73,6 +74,10 @@ exports.createBase= async (req,res)=>{
         const data=req.body;
         db.query('insert into bases set ?',data,(err,result)=>{
             if(err){
+                if (err.code === "ER_DUP_ENTRY") {
+                     console.log("Duplicate entry error:", err);
+                     return res.status(409).send("Base already exists"); // 409 Conflict
+                }
                 console.log('Error creating base:', err);
                 return res.status(500).send('Internal Server Error');
             }
@@ -85,6 +90,43 @@ exports.createBase= async (req,res)=>{
     }
     catch(err){
         console.error('Error creating base:', err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+exports.getBases = async (req,res)=>{
+    try{
+        db.query('select * from bases', (err, result)=>{
+            if(err){
+                console.log('Error fetching bases:', err);
+                return res.status(500).send('Internal Server Error');
+            }
+            if(result.length>0){
+                return res.status(200).json(result);
+            }
+            res.status(404).send('No bases found');
+        })
+    }
+    catch(err){
+        console.error('Error fetching bases:', err);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+exports.getUsers = async (req, res) => {
+    try {
+        db.query('SELECT * FROM users as u left join bases as b on u.base_id=b.base_id  ', (err, result) => {
+            if (err) {
+                console.log('Error fetching users:', err);
+                return res.status(500).send('Internal Server Error');
+            }
+            if (result.length > 0) {
+                return res.status(200).json(result);
+            }
+            res.status(404).send('No users found');
+        });
+    } catch (err) {
+        console.error('Error fetching users:', err);
         res.status(500).send('Internal Server Error');
     }
 }
