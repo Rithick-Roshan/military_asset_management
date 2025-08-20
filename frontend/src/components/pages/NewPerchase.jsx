@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import {
-  Package, MapPin, Calendar, DollarSign, User, Building,
-  Search, Plus, CheckCircle, AlertCircle, Save, X, Eye
-} from 'lucide-react';
+import {  Package, Building, AlertCircle, Save, X, Eraser,IndianRupee} from 'lucide-react';
 
 const NewPurchase = ({setCurrentPage}) => {
   // Form States
@@ -16,7 +13,7 @@ const NewPurchase = ({setCurrentPage}) => {
   const [assets, setAssets] = useState([]);
   const [bases, setBases] = useState([]);
   const [loading, setLoading] = useState(false);
-
+   
   // Asset Form Data
   const [assetForm, setAssetForm] = useState({
     asset_name: '',
@@ -40,16 +37,14 @@ const NewPurchase = ({setCurrentPage}) => {
     supplier: ''
   });
 
-  // Mock Data - Replace with your API calls
-  const mockBases = [
-    { base_id: 1, base_name: "Northern Command Base", base_code: "NCB01", location: "SriNAGAR, Jammu & Kashmir" },
-    { base_id: 2, base_name: "Southern Command Base", base_code: "SCB02", location: "Mumbai, Maharashtra" },
-    { base_id: 3, base_name: "Eastern Command Base", base_code: "ECB03", location: "Kolkata, West Bengal" },
-  ];
 
   const categories = ['Weapons', 'Vehicles', 'Ammunition', 'Electronics', 'Communications', 'Medical', 'Others'];
   const statusOptions = ['Pending', 'Approved', 'Delivered', 'Cancelled'];
   const conditionOptions = ['Excellent', 'Good', 'Fair', 'Poor'];
+
+  const backToPurchase = ()=>{
+       setCurrentPage('purchases')
+  }
 
   const takeAssest = async()=>{
         try{
@@ -127,7 +122,7 @@ const NewPurchase = ({setCurrentPage}) => {
           model: asset.model,
           year_manufactured: asset.year_manufactured || new Date().getFullYear(),
           condition_status: asset.condition_status,
-          warranty_expiry: ''
+          warranty_expiry: asset.warranty_expiry
         });
         setShowAssetDetails(true);
       }
@@ -149,7 +144,7 @@ const NewPurchase = ({setCurrentPage}) => {
     setLoading(true);
 
     try {
-      // Validate required fields
+      // // Validate required fields
       if (!selectedBase) {
         alert('Please select a base');
         setLoading(false);
@@ -174,13 +169,7 @@ const NewPurchase = ({setCurrentPage}) => {
         return;
       }
 
-      // Prepare data for submission
-      const purchaseData = {
-        ...purchaseForm,
-        base_id: parseInt(selectedBase),
-        asset_id: isNewAsset ? null : parseInt(selectedAsset),
-        equipment_type_id: isNewAsset ? null : parseInt(selectedAsset),
-      };
+      // // Prepare data for submission
 
       const assetData = isNewAsset ? {
         ...assetForm,
@@ -192,24 +181,102 @@ const NewPurchase = ({setCurrentPage}) => {
         purchase_date: purchaseForm.purchase_date,
         current_status: 'Available'
       } : null;
-
-      console.log('Purchase Data:', purchaseData);
+      const purchaseData = {
+        ...purchaseForm,
+        base_id: parseInt(selectedBase),
+        asset_id:isNewAsset?null:parseInt(selectedAsset),
+      };
+       
+      // console.log('Purchase Data:', purchaseData);
       console.log('Asset Data:', assetData);
+     
+      if(isNewAsset){
+           const response = await axios.post("http://localhost:3000/asset/create",assetData);
+           if(response.status===200){
+               console.log("asset was created");
+           } 
+           const AssetRespose = await axios.get("http://localhost:3000/asset/getassetid",{params:{asset_serial_number: assetForm.asset_serial_number}});
+            console.log("Assets backend data"+AssetRespose.data.asset_id);
+            purchaseData.asset_id = AssetRespose.data.asset_id;
 
-      // Here you would make your API calls
-      // If new asset: POST /asset/create then POST /purchase/create
-      // If existing asset: POST /purchase/create and UPDATE asset quantities
+           const resposeOfPurchase = await axios.post("http://localhost:3000/purchase/create",purchaseData);
+           if(resposeOfPurchase.status === 200){
+              console.log("purchase was created");
+           }
+      }
+      else{
+            const resopnseToCheckAssetAndBase = await axios.post("http://localhost:3000/purchase/checkassetandbase",{asset_id:parseInt(selectedAsset),base_id:parseInt(selectedBase)});
+            if(resopnseToCheckAssetAndBase.status === 200){
+              console.log("Asset and Base match found");
+              const responoseOfAsset = await axios.get("http://localhost:3000/asset/getassetbyid",{params:{asset_id:parseInt(selectedAsset)}});
+              console.log("Asset data from backend"+responoseOfAsset.data);
+              const OldAssetData = responoseOfAsset.data;
+              const updatedAssetData = {
+                ...OldAssetData,
+                available: OldAssetData.available + parseInt(purchaseForm.quantity),
+                total_quantity: OldAssetData.total_quantity + parseInt(purchaseForm.quantity),
+                purchase_price: purchaseForm.total_amount,
+                purchase_date: purchaseForm.purchase_date,
+                warranty_expiry: purchaseForm.warranty_expiry
+              };
+              const updateAssetResponse  = await axios.put("http://localhost:3000/asset/updateasseet",updatedAssetData);
+              if(updateAssetResponse.status === 200){
+                console.log("Asset updated successfully");
+              }
+              const resposeOfPurchase = await axios.post("http://localhost:3000/purchase/create",purchaseData);
+              if(resposeOfPurchase.status === 200){
+                     console.log("purchase was created");
+                 }
 
-      // Simulate API delay
+            }
+            else if (resopnseToCheckAssetAndBase.status === 201){
+              console.log("Asset and Base do not match");
+              
+               const responoseOfAsset = await axios.get("http://localhost:3000/asset/getassetbyid",{params:{asset_id:parseInt(selectedAsset)}});
+               console.log("msg "+responoseOfAsset);
+               const OldAssetData = responoseOfAsset.data;
+              
+                const newAssetData = {
+                      ...OldAssetData,
+                      asset_id: undefined, // let DB auto-generate
+                      base_id: parseInt(selectedBase),
+                      total_quantity: parseInt(purchaseForm.quantity),
+                      available: parseInt(purchaseForm.quantity),
+                      assigned: 0,
+                      purchase_price: purchaseForm.total_amount,
+                      purchase_date: purchaseForm.purchase_date,
+                      warranty_expiry: purchaseForm.warranty_expiry
+                   };
+
+                   const createAssetResponse = await axios.post("http://localhost:3000/asset/create", newAssetData);
+                   if (createAssetResponse.status === 200) {
+                    console.log("New asset created for this base");
+                   }
+
+                   const AssetRespose = await axios.get("http://localhost:3000/asset/getassetid", {
+                         params: { asset_serial_number: OldAssetData.asset_serial_number, base_id: selectedBase }
+                        });
+
+                    purchaseData.asset_id = AssetRespose.data.asset_id;
+
+                    const resposeOfPurchase = await axios.post("http://localhost:3000/purchase/create", purchaseData);
+                    if (resposeOfPurchase.status === 200) {
+                           console.log("purchase was created with new base-specific asset");
+                    }
+
+            }
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       alert('Purchase order created successfully!');
       
-      // Reset forms
+      // // Reset forms
       resetForms();
 
     } catch (error) {
-      console.error('Error creating purchase:', error);
+       console.log(error);
+      // console.error('Error creating purchase:', error);
       alert('Failed to create purchase order');
     } finally {
       setLoading(false);
@@ -451,7 +518,7 @@ const NewPurchase = ({setCurrentPage}) => {
         {/* Purchase Details */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <DollarSign className="w-5 h-5" />
+            <IndianRupee className="w-5 h-5" />
             Purchase Details
           </h3>
 
@@ -588,6 +655,14 @@ const NewPurchase = ({setCurrentPage}) => {
           <button
             type="button"
             onClick={resetForms}
+            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <Eraser className="w-4 h-4 inline mr-2" />
+            clear
+          </button>
+          <button
+            type="button"
+            onClick={backToPurchase}
             className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <X className="w-4 h-4 inline mr-2" />

@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
+import axios from 'axios';
 import { 
   Plus, Search, Filter, Eye, Edit, Trash2, 
   ShoppingCart, Calendar, DollarSign, Package,
   CheckCircle, Clock, AlertTriangle, Building,
-  Download, Upload, FileText, Truck
+  Download, Upload, FileText, Truck,
+  X,
+  IndianRupee
 } from 'lucide-react';
 
 const Purchases = ({setCurrentPage}) => {
@@ -11,6 +14,33 @@ const Purchases = ({setCurrentPage}) => {
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedBase, setSelectedBase] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [purchaseData, setPurchaseData] = useState([]);
+
+  const takePurchaseData = async () =>{
+       try{ 
+           const response = await axios.get("http://localhost:3000/purchase/getall");
+           if(response.status===200){
+               console.log("backend purchae data "+response.data);
+               setPurchaseData(response.data);
+           }
+            
+       }
+       catch(err){
+            if(err.status===404){
+              console.log("method not found",err);
+            }
+            console.log("error to fetch purchase data",err);
+       }
+  }
+
+
+  useEffect(()=>{
+      takePurchaseData();
+  },[])
+  
+  useEffect(()=>{
+      console.log("purchase data",purchaseData);
+  },[purchaseData])
  
   const HandleNewPurchase = ()=>{
       setCurrentPage("newPurchase");
@@ -221,15 +251,7 @@ const Purchases = ({setCurrentPage}) => {
             <h2 className="text-2xl font-bold text-gray-900">Purchase Orders</h2>
             <p className="text-gray-600 mt-1">Manage procurement and vendor relationships</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <FileText className="w-4 h-4" />
-              Reports
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Download className="w-4 h-4" />
-              Export
-            </button>
+          <div className="flex items-center">
             <button 
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             onClick={HandleNewPurchase}
@@ -250,7 +272,7 @@ const Purchases = ({setCurrentPage}) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.pending}</p>
+              <p className="text-xl font-bold text-gray-900">{purchaseData.filter(a => a.purchase_status=== 'Pending').length} </p>
             </div>
           </div>
         </div>
@@ -261,7 +283,7 @@ const Purchases = ({setCurrentPage}) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Approved</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.approved}</p>
+              <p className="text-xl font-bold text-gray-900">{purchaseData.filter(a => a.purchase_status==='Approved').length}</p>
             </div>
           </div>
         </div>
@@ -271,8 +293,8 @@ const Purchases = ({setCurrentPage}) => {
               <Package className="w-5 h-5 text-indigo-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">In Production</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.inProduction}</p>
+              <p className="text-sm text-gray-600">Ordered</p>
+              <p className="text-xl font-bold text-gray-900">{purchaseData.filter(a=> a.purchase_status==='Ordered').length}</p>
             </div>
           </div>
         </div>
@@ -283,18 +305,31 @@ const Purchases = ({setCurrentPage}) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Delivered</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.delivered}</p>
+              <p className="text-xl font-bold text-gray-900">{purchaseData.filter(a=> a.purchase_status==='Delivered').length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <X className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Cancelled</p>
+              <p className="text-xl font-bold text-gray-900">{purchaseData.filter(a=> a.purchase_status==='Cancelled').length}</p>
             </div>
           </div>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-100 rounded-lg">
-              <DollarSign className="w-5 h-5 text-purple-600" />
+              <IndianRupee className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Total Value</p>
-              <p className="text-xl font-bold text-gray-900">${(totalValue / 1000000).toFixed(1)}M</p>
+              <p className="text-sm text-gray-600">₹Total Value</p>
+              <p className="text-xl font-bold text-gray-900">{(
+    purchaseData.reduce((sum, a) => sum + Number(a.total_amount), 0) / 1000000
+  ).toFixed(2)} M</p>
             </div>
           </div>
         </div>
@@ -368,7 +403,7 @@ const Purchases = ({setCurrentPage}) => {
                   Order Details
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Vendor & Base
+                   supplier & Base
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Quantity & Cost
@@ -376,17 +411,14 @@ const Purchases = ({setCurrentPage}) => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status & Timeline
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Personnel & Payment
-                </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredPurchases.map((purchase) => (
-                <tr key={purchase.id} className="hover:bg-gray-50">
+              {purchaseData.map((purchase) => (
+                <tr key={purchase.purchase_id} className="hover:bg-gray-50">
                   
                   {/* Order Details */}
                   <td className="px-6 py-4">
@@ -395,12 +427,9 @@ const Purchases = ({setCurrentPage}) => {
                         <ShoppingCart className="w-5 h-5 text-gray-600" />
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">{purchase.item}</div>
-                        <div className="text-sm text-blue-600">{purchase.orderNumber}</div>
+                        <div className="font-medium text-gray-900">{purchase.asset_name}</div>
+                        <div className="text-sm text-blue-600">{purchase.purchase_order_number}</div>
                         <div className="text-xs text-gray-400">{purchase.category}</div>
-                        <span className={`inline-flex px-2 py-1 text-xs rounded-full mt-1 ${getUrgencyColor(purchase.urgency)}`}>
-                          {purchase.urgency}
-                        </span>
                       </div>
                     </div>
                   </td>
@@ -410,9 +439,8 @@ const Purchases = ({setCurrentPage}) => {
                     <div className="space-y-1">
                       <div className="flex items-center gap-1">
                         <Building className="w-3 h-3 text-gray-400" />
-                        <span className="font-medium text-gray-900">{purchase.vendor}</span>
+                        <span className="font-medium text-gray-900">{purchase.supplier}</span>
                       </div>
-                      <div className="text-sm text-gray-600">{purchase.vendorContact}</div>
                       <div className="text-sm text-blue-600">{purchase.base}</div>
                     </div>
                   </td>
@@ -424,10 +452,10 @@ const Purchases = ({setCurrentPage}) => {
                         {purchase.quantity.toLocaleString()} units
                       </div>
                       <div className="text-sm text-gray-600">
-                        ${purchase.unitPrice.toLocaleString()} per unit
+                        ${purchase.unit_price.toLocaleString()} per unit
                       </div>
                       <div className="font-semibold text-green-600">
-                        ${purchase.totalAmount.toLocaleString()} total
+                        ${purchase.total_amount.toLocaleString()} total
                       </div>
                     </div>
                   </td>
@@ -437,45 +465,16 @@ const Purchases = ({setCurrentPage}) => {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getStatusColor(purchase.status)}`}>
-                          {getStatusIcon(purchase.status)}
-                          {purchase.status}
+                          {getStatusIcon(purchase.purchase_status)}
+                          {purchase.purchase_status}
                         </span>
                       </div>
                       <div className="text-sm space-y-1">
                         <div className="flex items-center gap-1 text-gray-600">
                           <Calendar className="w-3 h-3" />
-                          Ordered: {purchase.orderDate}
+                          Ordered: {purchase.purchase_date}
                         </div>
-                        {purchase.actualDelivery ? (
-                          <div className="text-green-600">
-                            Delivered: {purchase.actualDelivery}
-                          </div>
-                        ) : (
-                          <div className="text-orange-600">
-                            Expected: {purchase.expectedDelivery}
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  </td>
-
-                  {/* Personnel & Payment */}
-                  <td className="px-6 py-4">
-                    <div className="space-y-2">
-                      <div className="text-sm">
-                        <div className="text-gray-600">Requested: {purchase.requestedBy}</div>
-                        {purchase.approvedBy && (
-                          <div className="text-green-600">Approved: {purchase.approvedBy}</div>
-                        )}
-                      </div>
-                      <span className={`inline-flex px-2 py-1 text-xs rounded-full ${getPaymentStatusColor(purchase.paymentStatus)}`}>
-                        {purchase.paymentStatus}
-                      </span>
-                      {purchase.invoiceNumber && (
-                        <div className="text-xs text-blue-600">
-                          Invoice: {purchase.invoiceNumber}
-                        </div>
-                      )}
                     </div>
                   </td>
 
@@ -485,18 +484,10 @@ const Purchases = ({setCurrentPage}) => {
                       <button className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors" title="View Details">
                         <Eye className="w-4 h-4" />
                       </button>
-                      {purchase.status === 'Pending Approval' && (
-                        <button className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors" title="Approve">
-                          <CheckCircle className="w-4 h-4" />
-                        </button>
-                      )}
                       <button className="p-1 text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded transition-colors" title="Edit">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors" title="Download Invoice">
-                        <Download className="w-4 h-4" />
-                      </button>
-                      {purchase.status === 'Pending Approval' && (
+                      {purchase.purchase_status === 'Pending' && (
                         <button className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors" title="Cancel">
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -523,67 +514,6 @@ const Purchases = ({setCurrentPage}) => {
               <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-white transition-colors">
                 Next
               </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Purchase Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Top Vendors</h3>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {Array.from(new Set(purchases.map(p => p.vendor))).slice(0, 5).map((vendor) => {
-                const vendorPurchases = purchases.filter(p => p.vendor === vendor);
-                const totalValue = vendorPurchases.reduce((sum, p) => sum + p.totalAmount, 0);
-                return (
-                  <div key={vendor} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{vendor}</p>
-                      <p className="text-sm text-gray-600">{vendorPurchases.length} orders</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900">${totalValue.toLocaleString()}</p>
-                      <p className="text-xs text-gray-500">Total Value</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Delivery Performance</h3>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {purchases.filter(p => p.actualDelivery).slice(0, 5).map((purchase) => {
-                const expectedDate = new Date(purchase.expectedDelivery);
-                const actualDate = new Date(purchase.actualDelivery);
-                const diffDays = Math.ceil((actualDate - expectedDate) / (1000 * 60 * 60 * 24));
-                const isOnTime = diffDays <= 0;
-                
-                return (
-                  <div key={purchase.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{purchase.item}</p>
-                      <p className="text-sm text-gray-600">{purchase.orderNumber}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        isOnTime ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {isOnTime ? `${Math.abs(diffDays)} days early` : `${diffDays} days late`}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>

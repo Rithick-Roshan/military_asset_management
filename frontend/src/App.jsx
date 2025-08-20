@@ -14,6 +14,9 @@ import AddBase from './components/pages/AddBase'
 import EditBase from './components/pages/EditBase'
 import EditUser from './components/pages/EditUser'
 import NewPurchase from './components/pages/NewPerchase'
+import AddAssignment from './components/pages/AddAssignment'
+import Transfers from './components/pages/Transfers'
+import AddTransfer from './components/pages/AddTransfer'
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -47,13 +50,16 @@ function App() {
           {currentPage === "assets" && <Assets />}
           {currentPage === "purchases" && <Purchases setCurrentPage={setCurrentPage} />}
           {currentPage ==="expenditures" && <Expenditures />}
-          {currentPage ==="assignments" && <Assignments  />}
+          {currentPage ==="assignments" && <Assignments setCurrentPage={setCurrentPage}  />}
           {currentPage ==="users" && <UsersPage  setCurrentPage={setCurrentPage} setBaseId={setBaseId} setUserId={setUserId} />}
           {currentPage === "addUser" && <AddUser setCurrentPage={setCurrentPage} />}
           {currentPage === "addBase" && <AddBase setCurrentPage={setCurrentPage} />}
           {currentPage === "editBase" && <EditBase setCurrentPage={setCurrentPage} baseId={baseId}/>}
           {currentPage === "editUser" && <EditUser setCurrentPage={setCurrentPage} userId={userId} />}
           {currentPage === "newPurchase" && <NewPurchase setCurrentPage={setCurrentPage} />}
+          {currentPage === "addAssignment" && <AddAssignment setCurrentPage={setCurrentPage} />}
+          {currentPage === "transfers" && <Transfers setCurrentPage={setCurrentPage} />}
+          {currentPage === "addTransfer" && <AddTransfer setCurrentPage={setCurrentPage} />}
           
     </>
   )

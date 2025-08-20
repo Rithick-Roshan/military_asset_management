@@ -97,4 +97,39 @@ set  base_id=1
 where user_id=1;
 
 DELETE FROM users
-WHERE user_id = 5;
+WHERE user_id = 2;
+
+
+alter table assets
+add column asset_name varchar(100) not null, 
+add column category enum('Weapons','Vehicles','Ammunition','Electronics','Medical','Communications','Others') not null;
+  
+alter table assets
+drop column equipment_type_id;
+
+delete from assets
+where asset_id=1;
+
+alter table assets
+add column total_quantity int not null,
+add column assigned int default 0;
+
+alter table assignments
+add column user_id int not null; 
+
+DELETE FROM assets WHERE asset_id > 0;
+
+select * from assets;
+
+delete from assignments where assignment_id >0;
+
+alter table assignments
+add column userassigned int not null;
+
+select * from purchases;
+
+update assets
+set asset_name="Assault Rifle S"
+where asset_id=10;
+
+

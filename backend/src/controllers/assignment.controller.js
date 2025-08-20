@@ -21,7 +21,7 @@ exports.createAssignment = async (req, res) => {
 
 exports.getAssignments = async (req, res) => {
     try {
-        db.query('SELECT * FROM assignments', (err, result) => {
+        db.query('SELECT * FROM assignments as am join assets as a on a.asset_id=am.asset_id join bases as b on b.base_id = am.base_id join users as u on u.user_id=am.user_id', (err, result) => {
             if (err) {
                 console.log('Error fetching assignments:', err);
                 return res.status(500).send('Internal Server Error');

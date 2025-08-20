@@ -1,17 +1,39 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Plus, Search, Filter, Eye, Edit, RotateCcw, 
   Users, Calendar, MapPin, Package, 
   CheckCircle, Clock, AlertTriangle, User,
   Download, Upload, Badge, Shield
 } from 'lucide-react';
+import axios from 'axios';
 
-const Assignments = () => {
+const Assignments = ({setCurrentPage}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedBase, setSelectedBase] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [assignmentData,setAssignmentData]= useState([]);
 
+  const takeAssignmentData = async()=>{
+       try{
+            const response = await axios.get("http://localhost:3000/assignment/getall");
+            if(response.status===200){
+                setAssignmentData(response.data);
+                console.log("Assignment fetched sucessfully"+response.data);
+            }
+       }
+       catch(err){
+            console.log("failed to fetch assignment"+err);
+       }
+  }
+
+  useEffect(()=>{
+      takeAssignmentData();
+  },[])
+
+  useEffect(()=>{
+    console.log(assignmentData);
+  },[assignmentData])
   const assignments = [
     {
       id: 1,
@@ -193,10 +215,9 @@ const Assignments = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'Active': return <Clock className="w-4 h-4" />;
-      case 'Returned': return <CheckCircle className="w-4 h-4" />;
-      case 'Overdue': return <AlertTriangle className="w-4 h-4" />;
-      case 'Expended': return <Package className="w-4 h-4" />;
+      case 'Pending': return <Clock className="w-4 h-4" />;
+      case 'Completed': return <CheckCircle className="w-4 h-4" />;
+      case 'Failed': return <AlertTriangle className="w-4 h-4" />;
       default: return <Clock className="w-4 h-4" />;
     }
   };
@@ -224,6 +245,10 @@ const Assignments = () => {
     };
   };
 
+  const handleAddAssigment = ()=>{
+       setCurrentPage("addAssignment");
+  }
+
   const statusCounts = getStatusCounts();
 
   return (
@@ -237,15 +262,10 @@ const Assignments = () => {
             <p className="text-gray-600 mt-1">Track asset assignments to personnel and units</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Badge className="w-4 h-4" />
-              Responsibility Statements
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button 
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={handleAddAssigment}
+            >
               <Plus className="w-4 h-4" />
               New Assignment
             </button>
@@ -254,15 +274,15 @@ const Assignments = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <Clock className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Active</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.active}</p>
+              <p className="text-sm text-gray-600">Pending</p>
+              <p className="text-xl font-bold text-gray-900">{assignmentData.filter( data => data.assignment_status==="Pending").length}</p>
             </div>
           </div>
         </div>
@@ -272,8 +292,8 @@ const Assignments = () => {
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Returned</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.returned}</p>
+              <p className="text-sm text-gray-600">Completed</p>
+              <p className="text-xl font-bold text-gray-900">{assignmentData.filter( data => data.assignment_status==="Completed").length}</p>
             </div>
           </div>
         </div>
@@ -283,22 +303,12 @@ const Assignments = () => {
               <AlertTriangle className="w-5 h-5 text-red-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Overdue</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.overdue}</p>
+              <p className="text-sm text-gray-600">Failed</p>
+              <p className="text-xl font-bold text-gray-900">{assignmentData.filter( data => data.assignment_status==="Failed").length}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gray-100 rounded-lg">
-              <Package className="w-5 h-5 text-gray-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Expended</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.expended}</p>
-            </div>
-          </div>
-        </div>
+
       </div>
 
       {/* Filters and Search */}
@@ -372,13 +382,13 @@ const Assignments = () => {
                   Assigned Personnel
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Assignment Timeline
+                  Base
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status & Condition
+                  Status 
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Purpose & Authority
+                  Mission
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -386,8 +396,8 @@ const Assignments = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAssignments.map((assignment) => (
-                <tr key={assignment.id} className="hover:bg-gray-50">
+              {assignmentData.map((assignment) => (
+                <tr key={assignment.assignment_id} className="hover:bg-gray-50">
                   
                   {/* Asset Details */}
                   <td className="px-6 py-4">
@@ -396,9 +406,8 @@ const Assignments = () => {
                         <Package className="w-5 h-5 text-gray-600" />
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">{assignment.asset}</div>
-                        <div className="text-sm text-blue-600">{assignment.assignmentId}</div>
-                        <div className="text-xs text-gray-500">{assignment.serialNumber}</div>
+                        <div className="font-medium text-gray-900">{assignment.asset_name}</div>
+                        <div className="text-xs text-gray-500">{assignment.asset_serial_number}</div>
                         <div className="text-xs text-gray-400">{assignment.category}</div>
                       </div>
                     </div>
@@ -409,39 +418,19 @@ const Assignments = () => {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <Shield className="w-3 h-3 text-blue-500" />
-                        <span className="font-medium text-gray-900">{assignment.assignedTo}</span>
+                        <span className="font-medium text-gray-900">{assignment.username}</span>
                       </div>
-                      <div className="text-sm text-gray-600">{assignment.rank}</div>
-                      <div className="text-sm text-blue-600">{assignment.unit}</div>
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <MapPin className="w-3 h-3" />
-                        {assignment.base}
-                      </div>
+                      <div className="text-sm text-gray-600">{assignment.role}</div>
                     </div>
                   </td>
 
-                  {/* Assignment Timeline */}
                   <td className="px-6 py-4">
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-gray-400" />
-                        <span className="text-gray-600">Assigned: {assignment.assignmentDate}</span>
+                        <Shield className="w-3 h-3 text-gray-400" />
+                        <span className="text-gray-600">{assignment.base_name}</span>
+                        <span className="text-gray-600">{assignment.location}</span>
                       </div>
-                      {assignment.expectedReturnDate && (
-                        <div className="text-orange-600">
-                          Expected: {assignment.expectedReturnDate}
-                        </div>
-                      )}
-                      {assignment.actualReturnDate && (
-                        <div className="text-green-600">
-                          Returned: {assignment.actualReturnDate}
-                        </div>
-                      )}
-                      {isOverdue(assignment) && (
-                        <div className="text-red-600 font-medium">
-                          {getDaysOverdue(assignment)} days overdue
-                        </div>
-                      )}
                     </div>
                   </td>
 
@@ -449,44 +438,19 @@ const Assignments = () => {
                   <td className="px-6 py-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getStatusColor(assignment.status)}`}>
-                          {getStatusIcon(assignment.status)}
-                          {assignment.status}
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getStatusColor(assignment.assignment_status)}`}>
+                          {getStatusIcon(assignment.assignment_status)}
+                          {assignment.assignment_status}
                         </span>
                       </div>
-                      {assignment.condition !== 'N/A' && (
-                        <div className="space-y-1">
-                          <div className={`text-sm font-medium ${getConditionColor(assignment.condition)}`}>
-                            Current: {assignment.condition}
-                          </div>
-                          {assignment.conditionAtAssignment && (
-                            <div className="text-xs text-gray-500">
-                              Original: {assignment.conditionAtAssignment}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {assignment.responsibilityStatement && (
-                        <div className="flex items-center gap-1">
-                          <Badge className="w-3 h-3 text-green-500" />
-                          <span className="text-xs text-green-600">Statement Signed</span>
-                        </div>
-                      )}
                     </div>
                   </td>
 
-                  {/* Purpose & Authority */}
+
                   <td className="px-6 py-4">
                     <div className="space-y-1">
                       <div className="text-sm text-gray-900 font-medium">
-                        {assignment.purpose}
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-gray-600">
-                        <User className="w-3 h-3" />
-                        By: {assignment.assignedBy}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        ID: {assignment.personnelId}
+                        {assignment.Mission}
                       </div>
                     </div>
                   </td>
@@ -494,19 +458,8 @@ const Assignments = () => {
                   {/* Actions */}
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors" title="View Details">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      {assignment.status === 'Active' && (
-                        <button className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors" title="Return Asset">
-                          <RotateCcw className="w-4 h-4" />
-                        </button>
-                      )}
                       <button className="p-1 text-orange-600 hover:text-orange-800 hover:bg-orange-50 rounded transition-colors" title="Edit Assignment">
                         <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded transition-colors" title="Download Statement">
-                        <Download className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
@@ -534,90 +487,6 @@ const Assignments = () => {
           </div>
         </div>
       </div>
-
-      {/* Assignment Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Assignment Duration Analysis</h3>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {assignments.filter(a => a.actualReturnDate).slice(0, 5).map((assignment) => {
-                const assignedDate = new Date(assignment.assignmentDate);
-                const returnedDate = new Date(assignment.actualReturnDate);
-                const durationDays = Math.ceil((returnedDate - assignedDate) / (1000 * 60 * 60 * 24));
-                
-                return (
-                  <div key={assignment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{assignment.asset}</p>
-                      <p className="text-sm text-gray-600">{assignment.assignedTo}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900">{durationDays} days</p>
-                      <p className="text-xs text-gray-500">Duration</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Top Asset Categories</h3>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {Array.from(new Set(assignments.map(a => a.category))).map((category) => {
-                const categoryAssignments = assignments.filter(a => a.category === category);
-                const activeCount = categoryAssignments.filter(a => a.status === 'Active').length;
-                
-                return (
-                  <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{category}</p>
-                      <p className="text-sm text-gray-600">{categoryAssignments.length} total assignments</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-blue-600">{activeCount}</p>
-                      <p className="text-xs text-gray-500">Active</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Overdue Assignments Alert */}
-      {assignments.some(a => a.status === 'Overdue') && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="text-lg font-semibold text-red-800 mb-2">Overdue Assignments Require Attention</h3>
-              <div className="space-y-2">
-                {assignments.filter(a => a.status === 'Overdue').map((assignment) => (
-                  <div key={assignment.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-red-200">
-                    <div>
-                      <p className="font-medium text-gray-900">{assignment.asset} - {assignment.assignmentId}</p>
-                      <p className="text-sm text-gray-600">{assignment.assignedTo} ({assignment.unit})</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-red-600 font-semibold">{getDaysOverdue(assignment)} days overdue</p>
-                      <p className="text-xs text-gray-500">Expected: {assignment.expectedReturnDate}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
