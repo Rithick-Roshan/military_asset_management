@@ -23,7 +23,7 @@ exports.createTransfer = async (req,res)=>{
 
 exports.getTransfer = async (req, res) => {
     try{
-        db.query('select * from transfers',(err,result)=>{
+        db.query('select t.*, b1.base_name as from_base_name, b1.base_code as from_base_code, b1.location as from_base_location, b2.base_name as to_base_name, b2.base_code as to_base_code, b2.location as to_base_location, a.* from transfers t join bases b1 on t.from_base_id=b1.base_id join bases b2 on t.to_base_id=b2.base_id join assets a on t.asset_id=a.asset_id',(err,result)=>{
             if(err){
                 console.log('Error fetching transfers:', err);
                 return res.status(500).send('Internal Server Error');

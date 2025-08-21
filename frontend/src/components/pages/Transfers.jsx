@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  Plus, Search, Filter, Eye, Edit, RotateCcw, 
-  Users, Calendar, MapPin, Package, 
-  CheckCircle, Clock, AlertTriangle, User,
-  Download, Upload, Badge, Shield, ArrowRight,
-  Truck, Send, RefreshCw
+  Plus, Search, Filter, Eye, Edit, MapPin, Package, 
+  CheckCircle, Clock, AlertTriangle, ArrowRight,
+  Truck
 } from 'lucide-react';
-// import axios from 'axios'; // Commented out for artifact demo
+import axios from 'axios'; 
 
 const Transfers = ({setCurrentPage}) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,109 +13,49 @@ const Transfers = ({setCurrentPage}) => {
   const [selectedToBase, setSelectedToBase] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [transferData, setTransferData] = useState([]);
+  const [baseData,setBaseData]=useState([]);
 
-  const takeTransferData = async () => {
-    try {
-      // const response = await axios.get("http://localhost:3000/transfer/getall");
-      // if (response.status === 200) {
-      //   setTransferData(response.data);
-      //   console.log("Transfer data fetched successfully", response.data);
-      // }
-      
-      // For demo purposes, using sample data
-      setTransferData(sampleTransfers);
-    } catch (err) {
-      console.log("Failed to fetch transfer data", err);
+const takeTransferData = async () => {
+  try {
+    const response = await axios.get("http://localhost:3000/transfer/getall");
+    if (response.status === 200) {
+      setTransferData(response.data);
+      console.log("Transfer data fetched successfully", response.data[0]?.asset_name);
     }
-  };
+    
+    const responsebase = await axios.get("http://localhost:3000/user/getbases")
+    if(responsebase.status===200){
+      setBaseData(responsebase.data);
+      console.log("Base data fetched sucessfully"+responsebase.data);
+    }
+    
+  } catch (err) {
+    console.log("Failed to fetch transfer data", err);
+    // setTransferData(sampleTransfers); 
+  }
+};
+
 
   useEffect(() => {
     takeTransferData();
   }, []);
 
   useEffect(() => {
-    console.log(transferData);
+    console.log("backend transfer data", transferData[0]?.asset_name);
   }, [transferData]);
 
-  // Sample data for demonstration (replace with actual data structure when API is ready)
-  const sampleTransfers = [
-    {
-      id: 1,
-      transferId: 'TRF-2024-001',
-      asset: 'M4A1 Carbine',
-      serialNumber: 'M4-2024-001',
-      category: 'Weapons',
-      fromBase: 'Fort Liberty',
-      toBase: 'Camp Pendleton',
-      status: 'Pending',
-      transferDate: '2024-03-15',
-      quantity: 5,
-      initiatedBy: 'Lt. Col. Johnson',
-      approvedBy: null,
-      notes: 'Transfer for training exercise',
-      assetId: 1
-    },
-    {
-      id: 2,
-      transferId: 'TRF-2024-002',
-      asset: 'Humvee',
-      serialNumber: 'HV-2024-005',
-      category: 'Vehicles',
-      fromBase: 'Camp Pendleton',
-      toBase: 'JBLM',
-      status: 'In Transit',
-      transferDate: '2024-03-12',
-      quantity: 2,
-      initiatedBy: 'Maj. Davis',
-      approvedBy: 'Col. Smith',
-      notes: 'Urgent deployment requirement',
-      assetId: 2
-    },
-    {
-      id: 3,
-      transferId: 'TRF-2024-003',
-      asset: 'Medical Kit',
-      serialNumber: 'MED-2024-030',
-      category: 'Medical',
-      fromBase: 'Fort Hood',
-      toBase: 'Fort Liberty',
-      status: 'Completed',
-      transferDate: '2024-03-08',
-      quantity: 10,
-      initiatedBy: 'Capt. Anderson',
-      approvedBy: 'Maj. Wilson',
-      notes: 'Medical supplies restocking',
-      assetId: 3
-    },
-    {
-      id: 4,
-      transferId: 'TRF-2024-004',
-      asset: 'Radio Set',
-      serialNumber: 'RD-2024-012',
-      category: 'Communications',
-      fromBase: 'JBLM',
-      toBase: 'Fort Hood',
-      status: 'Rejected',
-      transferDate: '2024-03-10',
-      quantity: 3,
-      initiatedBy: 'Sgt. Miller',
-      approvedBy: null,
-      notes: 'Insufficient justification provided',
-      assetId: 4
-    }
-  ];
+
 
   const categories = ['All', 'Weapons', 'Vehicles', 'Ammunition', 'Electronics', 'Communications', 'Medical', 'Others'];
   const bases = ['All', 'Fort Liberty', 'Camp Pendleton', 'JBLM', 'Fort Hood'];
-  const statuses = ['All', 'Pending', 'In Transit', 'Completed', 'Rejected'];
+  const statuses = ['All', 'Pending', 'In Transit', 'Completed', 'Failed'];
 
-  const filteredTransfers = sampleTransfers.filter(transfer => {
-    const matchesSearch = transfer.asset.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transfer.transferId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transfer.serialNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = selectedStatus === 'All' || transfer.status === selectedStatus;
-    const matchesFromBase = selectedFromBase === 'All' || transfer.fromBase === selectedFromBase;
-    const matchesToBase = selectedToBase === 'All' || transfer.toBase === selectedToBase;
+  const filteredTransfers = transferData.filter(transfer => {
+      console.log("asset name :"+transfer.asset_name);
+    const matchesSearch = transfer.asset_name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = selectedStatus === 'All' || transfer.transfer_status === selectedStatus;
+    const matchesFromBase = selectedFromBase === 'All' || transfer.from_base_name === selectedFromBase;
+    const matchesToBase = selectedToBase === 'All' || transfer.to_base_name === selectedToBase;
     const matchesCategory = selectedCategory === 'All' || transfer.category === selectedCategory;
     
     return matchesSearch && matchesStatus && matchesFromBase && matchesToBase && matchesCategory;
@@ -128,7 +66,7 @@ const Transfers = ({setCurrentPage}) => {
       case 'Pending': return 'bg-yellow-100 text-yellow-800';
       case 'In Transit': return 'bg-blue-100 text-blue-800';
       case 'Completed': return 'bg-green-100 text-green-800';
-      case 'Rejected': return 'bg-red-100 text-red-800';
+      case 'Failed': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -138,17 +76,17 @@ const Transfers = ({setCurrentPage}) => {
       case 'Pending': return <Clock className="w-4 h-4" />;
       case 'In Transit': return <Truck className="w-4 h-4" />;
       case 'Completed': return <CheckCircle className="w-4 h-4" />;
-      case 'Rejected': return <AlertTriangle className="w-4 h-4" />;
+      case 'Failed': return <AlertTriangle className="w-4 h-4" />;
       default: return <Clock className="w-4 h-4" />;
     }
   };
 
   const getStatusCounts = () => {
     return {
-      pending: sampleTransfers.filter(t => t.status === 'Pending').length,
-      inTransit: sampleTransfers.filter(t => t.status === 'In Transit').length,
-      completed: sampleTransfers.filter(t => t.status === 'Completed').length,
-      rejected: sampleTransfers.filter(t => t.status === 'Rejected').length
+      pending: transferData.filter(t => t.transfer_status === 'Pending').length,
+      inTransit: transferData.filter(t => t.transfer_status === 'In Transit').length,
+      completed: transferData.filter(t => t.transfer_status === 'Completed').length,
+      Failed: transferData.filter(t => t.stattransfer_statusus === 'Failed').length
     };
   };
 
@@ -189,7 +127,7 @@ const Transfers = ({setCurrentPage}) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Pending</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.pending}</p>
+              <p className="text-xl font-bold text-gray-900">{transferData.filter(data=> data.transfer_status==="Pending").length}</p>
             </div>
           </div>
         </div>
@@ -200,7 +138,7 @@ const Transfers = ({setCurrentPage}) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">In Transit</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.inTransit}</p>
+              <p className="text-xl font-bold text-gray-900">{transferData.filter(data=> data.transfer_status==="In_Transit").length}</p>
             </div>
           </div>
         </div>
@@ -211,7 +149,7 @@ const Transfers = ({setCurrentPage}) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Completed</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.completed}</p>
+              <p className="text-xl font-bold text-gray-900">{transferData.filter(data=> data.transfer_status==="Completed").length}</p>
             </div>
           </div>
         </div>
@@ -221,8 +159,8 @@ const Transfers = ({setCurrentPage}) => {
               <AlertTriangle className="w-5 h-5 text-red-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Rejected</p>
-              <p className="text-xl font-bold text-gray-900">{statusCounts.rejected}</p>
+              <p className="text-sm text-gray-600">Failed</p>
+              <p className="text-xl font-bold text-gray-900">{transferData.filter(data=> data.transfer_status==="Failed").length}</p>
             </div>
           </div>
         </div>
@@ -274,8 +212,8 @@ const Transfers = ({setCurrentPage}) => {
             onChange={(e) => setSelectedFromBase(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            {bases.map(base => (
-              <option key={base} value={base}>From: {base}</option>
+            {baseData.map(base => (
+              <option key={base.base_name} value={base.base_name}>From: {base.base_name}</option>
             ))}
           </select>
 
@@ -285,15 +223,10 @@ const Transfers = ({setCurrentPage}) => {
             onChange={(e) => setSelectedToBase(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            {bases.map(base => (
-              <option key={base} value={base}>To: {base}</option>
+            {baseData.map(base => (
+              <option key={base.base_name} value={base.base_name}>To: {base.base_name}</option>
             ))}
           </select>
-
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Filter className="w-4 h-4" />
-            More Filters
-          </button>
         </div>
       </div>
 
@@ -303,9 +236,6 @@ const Transfers = ({setCurrentPage}) => {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Transfer ID
-                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Asset Details
                 </th>
@@ -328,18 +258,7 @@ const Transfers = ({setCurrentPage}) => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredTransfers.map((transfer) => (
-                <tr key={transfer.id} className="hover:bg-gray-50">
-                  
-                  {/* Transfer ID */}
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <div className="font-medium text-blue-600">{transfer.transferId}</div>
-                      <div className="text-xs text-gray-500">Initiated by: {transfer.initiatedBy}</div>
-                      {transfer.approvedBy && (
-                        <div className="text-xs text-green-600">Approved by: {transfer.approvedBy}</div>
-                      )}
-                    </div>
-                  </td>
+                <tr key={transfer.transfer_id} className="hover:bg-gray-50">
 
                   {/* Asset Details */}
                   <td className="px-6 py-4">
@@ -348,8 +267,8 @@ const Transfers = ({setCurrentPage}) => {
                         <Package className="w-5 h-5 text-gray-600" />
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">{transfer.asset}</div>
-                        <div className="text-xs text-gray-500">{transfer.serialNumber}</div>
+                        <div className="font-medium text-gray-900">{transfer.asset_name}</div>
+                        <div className="text-xs text-gray-500">{transfer.asset_serial_number}</div>
                         <div className="text-xs text-gray-400">{transfer.category}</div>
                       </div>
                     </div>
@@ -361,14 +280,14 @@ const Transfers = ({setCurrentPage}) => {
                       <div className="text-sm">
                         <div className="flex items-center gap-1">
                           <MapPin className="w-3 h-3 text-gray-400" />
-                          <span className="text-gray-900">{transfer.fromBase}</span>
+                          <span className="text-gray-900">{transfer.from_base_name}</span>
                         </div>
                       </div>
                       <ArrowRight className="w-4 h-4 text-gray-400" />
                       <div className="text-sm">
                         <div className="flex items-center gap-1">
                           <MapPin className="w-3 h-3 text-blue-500" />
-                          <span className="text-gray-900">{transfer.toBase}</span>
+                          <span className="text-gray-900">{transfer.to_base_name}</span>
                         </div>
                       </div>
                     </div>
@@ -377,22 +296,22 @@ const Transfers = ({setCurrentPage}) => {
                   {/* Status */}
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ${getStatusColor(transfer.status)}`}>
-                      {getStatusIcon(transfer.status)}
-                      {transfer.status}
+                      {getStatusIcon(transfer.transfer_status)}
+                      {transfer.transfer_status}
                     </span>
                   </td>
 
                   {/* Quantity */}
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">
-                      {transfer.quantity}
+                      {transfer.transfer_value}
                     </div>
                   </td>
 
                   {/* Date */}
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
-                      {new Date(transfer.transferDate).toLocaleDateString()}
+                      {new Date(transfer.transfer_date).toLocaleDateString()}
                     </div>
                   </td>
 
@@ -424,7 +343,7 @@ const Transfers = ({setCurrentPage}) => {
         <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Showing {filteredTransfers.length} of {sampleTransfers.length} transfers
+              Showing {filteredTransfers.length} of {transferData.length} transfers
             </div>
             <div className="flex items-center gap-2">
               <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-white transition-colors">

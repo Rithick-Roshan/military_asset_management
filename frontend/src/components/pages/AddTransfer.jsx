@@ -64,57 +64,6 @@ const AddTransfer = ({ setCurrentPage }) => {
        }
   }
 
-  // Sample data - replace with actual API calls
-  const sampleAssets = [
-    {
-      asset_id: 1,
-      asset_name: 'M4A1 Carbine',
-      asset_serial_number: 'M4-2024-001',
-      category: 'Weapons',
-      current_status: 'Available',
-      available: 15,
-      base_name: 'Fort Liberty',
-      condition_status: 'Excellent'
-    },
-    {
-      asset_id: 2,
-      asset_name: 'Humvee',
-      asset_serial_number: 'HV-2024-003',
-      category: 'Vehicles',
-      current_status: 'Available',
-      available: 3,
-      base_name: 'Fort Liberty',
-      condition_status: 'Good'
-    },
-    {
-      asset_id: 3,
-      asset_name: 'Medical Kit',
-      asset_serial_number: 'MED-2024-025',
-      category: 'Medical',
-      current_status: 'Available',
-      available: 50,
-      base_name: 'Camp Pendleton',
-      condition_status: 'Excellent'
-    },
-    {
-      asset_id: 4,
-      asset_name: 'Radio Set',
-      asset_serial_number: 'RD-2024-008',
-      category: 'Communications',
-      current_status: 'Available',
-      available: 8,
-      base_name: 'JBLM',
-      condition_status: 'Good'
-    }
-  ];
-
-  const sampleBases = [
-    { base_id: 1, base_name: 'Fort Liberty', base_code: 'FL', location: 'North Carolina' },
-    { base_id: 2, base_name: 'Camp Pendleton', base_code: 'CP', location: 'California' },
-    { base_id: 3, base_name: 'JBLM', base_code: 'JB', location: 'Washington' },
-    { base_id: 4, base_name: 'Fort Hood', base_code: 'FH', location: 'Texas' }
-  ];
-
   useEffect(() => {
     // Initialize data
     takeBaseData();
@@ -208,9 +157,7 @@ const AddTransfer = ({ setCurrentPage }) => {
     if (selectedAsset && parseInt(formData.transfer_value) > selectedAsset.available) {
       newErrors.quantity = `Quantity cannot exceed available amount (${selectedAsset.available})`;
     }
-    if (!formData.transferDate) newErrors.transferDate = 'Please select transfer date';
-    if (!formData.purpose.trim()) newErrors.purpose = 'Please enter transfer purpose';
-    if (!formData.requestedBy.trim()) newErrors.requestedBy = 'Please enter requester name';
+    if (!formData. transfer_date) newErrors.transfer_date = 'Please select transfer date';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -224,16 +171,31 @@ const AddTransfer = ({ setCurrentPage }) => {
     }
 
     try {
+      console.log(formData);
+      console.log('Transfer data to submit:',selectedAsset.available- formData.transfer_value);
+      selectedAsset.available=selectedAsset.available- formData.transfer_value;
+      if(selectedAsset.available<0){
+          alert("please enter corrrect asset value");
+          return;
+      }
       
-      console.log('Transfer data to submit:', formData);
+      if(formData.transfer_status==""){
+           alert("please enter the correct transer status");
+           return;
+
+      }
+      const responseAsset = await axios.put("http://localhost:3000/asset/updateassetforassignment",selectedAsset);
+      if(responseAsset.status===200){
+               console.log("new asset updated sucesfully");
+      }
        
-      // Here you would make the API call to create the transfer
-      // const response = await axios.post("http://localhost:3000/transfer/create", formData);
+
+      const response = await axios.post("http://localhost:3000/transfer/create", formData);
       
-      // For demo purposes, just show success and redirect
-      alert('Transfer request submitted successfully!');
-      if (setCurrentPage) {
-        setCurrentPage('transfers');
+      if(response.status===200){
+            alert('Transfer request submitted successfully!');
+
+            setCurrentPage("transfers");
       }
       
     } catch (error) {
@@ -457,7 +419,7 @@ const AddTransfer = ({ setCurrentPage }) => {
         )}
 
         {/* To Base Selection - Only show if asset and quantity are selected */}
-        {selectedAsset && formData.transfer_value && (
+        {selectedAsset && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Truck className="w-5 h-5" />
@@ -484,6 +446,43 @@ const AddTransfer = ({ setCurrentPage }) => {
                 ))}
               </select>
               {errors.toBaseId && <p className="text-red-500 text-sm mt-1">{errors.toBaseId}</p>}
+            </div>
+          </div>
+        )}
+        {selectedAsset && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Truck className="w-5 h-5" />
+                Select Transfer Status
+            </h3>
+            
+            <div className="max-w-md">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                status *
+              </label>
+              <select
+                name="transfer_status"
+                value={formData.transfer_status}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.transfer_status ? 'border-red-300' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Select Status</option>
+                  <option  value="Completed">
+                        Completed
+                  </option>
+                  <option  value="Pending">
+                        Pending
+                  </option>
+                  <option  value="In_Transit">
+                        In_Transit
+                  </option>
+                   <option  value="Failed">
+                       Failed 
+                  </option>
+              </select>
+              {errors.transfer_status && <p className="text-red-500 text-sm mt-1">{errors.transfer_status}</p>}
             </div>
           </div>
         )}

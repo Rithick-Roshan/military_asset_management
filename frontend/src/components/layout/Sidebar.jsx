@@ -7,7 +7,6 @@ const Sidebar = ({ currentPage, setCurrentPage, isSidebarOpen, setSidebarOpen })
     { id: 'transfers', name: 'Transfers', icon: ArrowLeftRight },
     { id: 'purchases', name: 'Purchases', icon: ShoppingCart },
     { id: 'assignments', name: 'Assignments', icon: Users },
-    { id: 'expenditures', name: 'Expenditures', icon: DollarSign },
     { id: 'users', name: 'Users', icon: User }
   ];
 

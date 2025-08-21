@@ -1,5 +1,7 @@
 const bcryptjs= require('bcryptjs');
 const db = require('../util/db');
+const jwt = require('jsonwebtoken');
+
 exports.createUser = async (req,res)=>{
     try{
         const data=req.body;
@@ -42,6 +44,8 @@ exports.createUser = async (req,res)=>{
 }
 
 exports.login= async (req,res)=>{
+    const jwt_secret = "67799r567cbcccvgcfgbvv";
+    const jwt_exp_in='24h'
     try{
         console.log(req.body);
         const {email,password}=req.body;
@@ -53,13 +57,35 @@ exports.login= async (req,res)=>{
             if(result.length==0){
                 return res.status(400).send('User not found');
             }
-            const user = result[0].password_hash;
-            const isMatch = await bcryptjs.compare(password,user);
+            const user = result[0];
+            const isMatch = await bcryptjs.compare(password,user.password_hash);
             if(!isMatch){
                 return res.status(400);
             }
             else{
-                return res.status(200).send('Login successful');
+                 const payload = {
+                  userId: user.user_id,
+                  email: user.email,
+                  };
+                  const token = jwt.sign(payload, jwt_secret, { 
+                     expiresIn: jwt_exp_in 
+                    });
+                return res.status(200).json({
+                success: true,
+                message: 'Login successful',
+                token: token,
+                user: {
+                    user_id: user.user_id,
+                    email: user.email,
+                    username:user.username,
+                    role:user.role,
+                    base_id:user.base_id,
+                    status:user.status,
+                    base_name:user.base_name,
+                    base_code:user.base_code,
+                    location:user.location
+                }
+            });
             }
         })
     }
