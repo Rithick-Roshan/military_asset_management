@@ -16,6 +16,7 @@ import NewPurchase from './components/pages/NewPerchase'
 import AddAssignment from './components/pages/AddAssignment'
 import Transfers from './components/pages/Transfers'
 import AddTransfer from './components/pages/AddTransfer'
+import AddAsset from './components/pages/AddAsset'
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -79,19 +80,20 @@ function App() {
         user={user}
         handleLogout={handleLogout}
       />
-      {currentPage === "home" && <HomeDashboard />}
-      {currentPage === "assets" && <Assets />}
-      {currentPage === "purchases" && <Purchases setCurrentPage={setCurrentPage} />}
-      {currentPage === "assignments" && <Assignments setCurrentPage={setCurrentPage} />}
-      {currentPage === "users" && <UsersPage setCurrentPage={setCurrentPage} setBaseId={setBaseId} setUserId={setUserId} />}
-      {currentPage === "addUser" && <AddUser setCurrentPage={setCurrentPage} />}
-      {currentPage === "addBase" && <AddBase setCurrentPage={setCurrentPage} />}
-      {currentPage === "editBase" && <EditBase setCurrentPage={setCurrentPage} baseId={baseId}/>}
-      {currentPage === "editUser" && <EditUser setCurrentPage={setCurrentPage} userId={userId} />}
-      {currentPage === "newPurchase" && <NewPurchase setCurrentPage={setCurrentPage} />}
-      {currentPage === "addAssignment" && <AddAssignment setCurrentPage={setCurrentPage} />}
-      {currentPage === "transfers" && <Transfers setCurrentPage={setCurrentPage} />}
-      {currentPage === "addTransfer" && <AddTransfer setCurrentPage={setCurrentPage} />}
+      {currentPage === "home" && <HomeDashboard setCurrentPage={setCurrentPage} user={user} />}
+      {currentPage === "assets" && <Assets setCurrentPage={setCurrentPage} user={user} />}
+      {currentPage === "purchases" && <Purchases setCurrentPage={setCurrentPage} user={user} />}
+      {currentPage === "assignments" && <Assignments setCurrentPage={setCurrentPage} user={user} />}
+      {currentPage === "users" && <UsersPage setCurrentPage={setCurrentPage} setBaseId={setBaseId} setUserId={setUserId} user={user} />}
+      {currentPage === "addUser" && <AddUser setCurrentPage={setCurrentPage} user={user}/>}
+      {currentPage === "addBase" && <AddBase setCurrentPage={setCurrentPage} user={user} />}
+      {currentPage === "editBase" && <EditBase setCurrentPage={setCurrentPage} baseId={baseId} user={user}/>}
+      {currentPage === "editUser" && <EditUser setCurrentPage={setCurrentPage} userId={userId}  user={user}/>}
+      {currentPage === "newPurchase" && <NewPurchase setCurrentPage={setCurrentPage} user={user}/>}
+      {currentPage === "addAssignment" && <AddAssignment setCurrentPage={setCurrentPage} user={user}/>}
+      {currentPage === "transfers" && <Transfers setCurrentPage={setCurrentPage} user={user} />}
+      {currentPage === "addTransfer" && <AddTransfer setCurrentPage={setCurrentPage} user={user} />}
+      {currentPage==="addAsset" && <AddAsset setCurrentPage={setCurrentPage} user={user} />}
     </>
   )
 }

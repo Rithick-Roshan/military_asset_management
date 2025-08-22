@@ -2,7 +2,7 @@ import React, { useState ,useEffect} from 'react';
 import axios from 'axios';
 import { User, Save, X, Eye, EyeOff, Mail, MapPin, Shield, Phone } from 'lucide-react';
 
-const AddUser = ({setCurrentPage }) => {
+const AddUser = ({setCurrentPage,user }) => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -215,6 +215,8 @@ const AddUser = ({setCurrentPage }) => {
               </div>
 
               {/* Role */}
+              {user?.role==="Admin" && ( 
+              <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Role *
@@ -233,6 +235,7 @@ const AddUser = ({setCurrentPage }) => {
                 </select>
                 {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
               </div>
+             
 
               {/* Base */}
               <div>
@@ -256,6 +259,54 @@ const AddUser = ({setCurrentPage }) => {
                 </div>
                 {errors.base && <p className="text-red-500 text-sm mt-1">{errors.base}</p>}
               </div>
+             </>
+              )}
+              {user?.role==="Base_Commander" && ( 
+              <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role *
+                </label>
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.role ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                >
+                  {roleOptions.map(option =>option.value!=="Admin" && (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+                {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
+              </div>
+             
+
+              {/* Base */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Base Assignment *
+                </label>
+                <div className="relative">
+                  <select
+                    name="base_id"
+                    value={formData.base_id}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.base ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  >
+                    {baseDataArray.map(option => option.base_id===user.base_id && (
+                      <option key={option.base_id} value={option.base_id}>{option.base_name}</option>
+                    ))}
+                  </select>
+                  <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                </div>
+                {errors.base && <p className="text-red-500 text-sm mt-1">{errors.base}</p>}
+              </div>
+             </>
+              )}
 
               {/* Status */}
               <div>

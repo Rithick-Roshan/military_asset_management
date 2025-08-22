@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {  Package, Building, AlertCircle, Save, X, Eraser,IndianRupee} from 'lucide-react';
 
-const NewPurchase = ({setCurrentPage}) => {
+const NewPurchase = ({setCurrentPage,user}) => {
   // Form States
   const [selectedAsset, setSelectedAsset] = useState('');
   const [selectedBase, setSelectedBase] = useState('');
@@ -33,7 +33,7 @@ const NewPurchase = ({setCurrentPage}) => {
     unit_price: '',
     total_amount: '',
     purchase_date: new Date().toISOString().split('T')[0],
-    status: 'Pending',
+    purchase_status: 'Pending',
     supplier: ''
   });
 
@@ -304,7 +304,7 @@ const NewPurchase = ({setCurrentPage}) => {
       unit_price: '',
       total_amount: '',
       purchase_date: new Date().toISOString().split('T')[0],
-      status: 'Pending',
+      purchase_status: 'Pending',
       supplier: ''
     });
   };
@@ -340,6 +340,7 @@ const NewPurchase = ({setCurrentPage}) => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Base Selection */}
+            {user?.role=="Logistics_Officer" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select Base *
@@ -350,6 +351,7 @@ const NewPurchase = ({setCurrentPage}) => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Choose a base...</option>
+                
                 {bases.map(base => (
                   <option key={base.base_id} value={base.base_id}>
                     {base.base_name} ({base.base_code}) - {base.location}
@@ -357,6 +359,27 @@ const NewPurchase = ({setCurrentPage}) => {
                 ))}
               </select>
             </div>
+            )}
+            {user?.role=="Base_Commander" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Base *
+              </label>
+              <select
+                value={selectedBase}
+                onChange={(e) => setSelectedBase(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Choose a base...</option>
+                
+                {bases.map(base => base.base_id===user.base_id && (
+                  <option key={base.base_id} value={base.base_id}>
+                    {base.base_name} ({base.base_code}) - {base.location}
+                  </option>
+                ))}
+              </select>
+            </div>
+            )}
 
             {/* Asset Selection */}
             <div>
@@ -593,8 +616,8 @@ const NewPurchase = ({setCurrentPage}) => {
                 Status
               </label>
               <select
-                value={purchaseForm.status}
-                onChange={(e) => setPurchaseForm(prev => ({ ...prev, status: e.target.value }))}
+                value={purchaseForm.purchase_status}
+                onChange={(e) => setPurchaseForm(prev => ({ ...prev, purchase_status: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 {statusOptions.map(status => (
@@ -628,11 +651,11 @@ const NewPurchase = ({setCurrentPage}) => {
                 <div className="text-sm text-gray-600">Quantity</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">${purchaseForm.unit_price || '0.00'}</div>
+                <div className="text-2xl font-bold text-green-600">₹{purchaseForm.unit_price || '0.00'}</div>
                 <div className="text-sm text-gray-600">Unit Price</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">${purchaseForm.total_amount || '0.00'}</div>
+                <div className="text-2xl font-bold text-purple-600">₹{purchaseForm.total_amount || '0.00'}</div>
                 <div className="text-sm text-gray-600">Total Amount</div>
               </div>
             </div>

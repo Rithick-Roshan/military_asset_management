@@ -8,7 +8,7 @@ import {
 
 import axios from 'axios';
 
-const AddTransfer = ({ setCurrentPage }) => {
+const AddTransfer = ({ setCurrentPage, user }) => {
   const [formData, setFormData] = useState({
     asset_id: '',
     from_base_id: '',
@@ -259,6 +259,7 @@ const AddTransfer = ({ setCurrentPage }) => {
       <div className="space-y-6">
         
         {/* From Base Selection */}
+        {user?.role==="Logistics_Officer" && ( 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <MapPin className="w-5 h-5" />
@@ -287,6 +288,37 @@ const AddTransfer = ({ setCurrentPage }) => {
             {errors.fromBaseId && <p className="text-red-500 text-sm mt-1">{errors.fromBaseId}</p>}
           </div>
         </div>
+        )}
+        {user?.role==="Base_Commander" && ( 
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <MapPin className="w-5 h-5" />
+             Select Source Base
+          </h3>
+          
+          <div className="max-w-md">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              From Base *
+            </label>
+            <select
+              name="fromBaseId"
+              value={formData.from_base_id}
+              onChange={handleFromBaseChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                errors.fromBaseId ? 'border-red-300' : 'border-gray-300'
+              }`}
+            >
+              <option value="">Select source base</option>
+              {bases.map(base => base?.base_id===user.base_id && (
+                <option key={base.base_id} value={base.base_id}>
+                  {base.base_name} ({base.base_code}) - {base.location}
+                </option>
+              ))}
+            </select>
+            {errors.fromBaseId && <p className="text-red-500 text-sm mt-1">{errors.fromBaseId}</p>}
+          </div>
+        </div>
+        )}
 
         {/* Asset Selection - Only show if from base is selected */}
         {formData.from_base_id && (

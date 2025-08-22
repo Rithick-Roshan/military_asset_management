@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Save, X, Package, Users, MapPin, FileText, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
-const AddAssignment = ({ setCurrentPage }) => {
+const AddAssignment = ({ setCurrentPage , user}) => {
   const [formData, setFormData] = useState({
     base_id: '',
     asset_id: '',
     mission: '',
     user_id: '',
     assignment_value: '',
-    status: 'Pending'
+    assignment_status: 'Pending'
   });
 
   const [availableAssets, setAvailableAssets] = useState([]);
@@ -175,7 +175,7 @@ const AddAssignment = ({ setCurrentPage }) => {
           mission: '',
           user_id: '',
           assignment_value: '',
-          status: 'Pending'
+          assignment_status: 'Pending'
         });
 
       } catch (err) {
@@ -227,6 +227,7 @@ const AddAssignment = ({ setCurrentPage }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Select Base *
                 </label>
+                {user?.role==="Logistics_Officer" && ( 
                 <div className="relative">
                   <select
                     name="base_id"
@@ -245,6 +246,27 @@ const AddAssignment = ({ setCurrentPage }) => {
                   </select>
                   <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                 </div>
+                )}
+                {user?.role==="Base_Commander" && ( 
+                <div className="relative">
+                  <select
+                    name="base_id"
+                    value={formData.base_id}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.base_id ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="">Choose a base...</option>
+                    {baseData.map(base => base.base_id===user.base_id && (
+                      <option key={base.base_id} value={base.base_id}>
+                        {base.base_name} - {base.location}
+                      </option>
+                    ))}
+                  </select>
+                  <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                </div>
+                )}
                 {errors.base_id && <p className="text-red-500 text-sm mt-1">{errors.base_id}</p>}
               </div>
 
@@ -336,7 +358,7 @@ const AddAssignment = ({ setCurrentPage }) => {
                 </label>
                 <select
                   name="status"
-                  value={formData.status}
+                  value={formData.assignment_status}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >

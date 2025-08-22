@@ -1,23 +1,26 @@
 import React, { useState,useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Plus, Search, Filter, Eye, Edit, Trash2, 
-  Package, MapPin, Calendar, User, AlertTriangle,
-  CheckCircle, Clock, Download, Upload
+  Plus, Eye, Edit, Trash2, 
+  Package, MapPin, User, 
+  CheckCircle,
+  UserStar
 } from 'lucide-react';
 
-const Assets = () => {
+const Assets = ({setCurrentPage,user}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedBase, setSelectedBase] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [assestArray, setAssestArray] = useState([]);
+  const [baseAssetArray,setBaseAssetArray]=useState([])
 
   const takeAssest = async () =>{
     try{
         const response = await axios.get("http://localhost:3000/asset/getall");
         if(response.status === 200){
           setAssestArray(response.data);
+
           console.log(response.data); 
         }  
     }
@@ -32,7 +35,12 @@ const Assets = () => {
  
   useEffect(()=>{
        console.log("assestArray updated", assestArray);
+       setBaseAssetArray(assestArray.filter(a=> a.base_id===user.base_id));
   },[assestArray]);
+  
+  useEffect(()=>{
+     console.log("base array",baseAssetArray);
+  },[baseAssetArray])
 
   const categories = ['All','Others', 'Weapons', 'Vehicles', 'Ammunition', 'Electronics', 'Communications', 'Medical'];
   const current_statuses = ['All','Available', 'Assigned', 'Under Maintenance', 'Decommissioned'];
@@ -78,6 +86,7 @@ const Assets = () => {
             <h2 className="text-2xl font-bold text-gray-900">Asset Inventory</h2>
             <p className="text-gray-600 mt-1">Manage and track all military assets across bases</p>
           </div>
+          {user?.role!='Admin' &&(
           <div className="flex items-center gap-3">
             <button 
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -87,10 +96,12 @@ const Assets = () => {
               Add Asset
             </button>
           </div>
+          )}
         </div>
       </div>
 
-      {/* Summary Cards */}
+      { user?.role==="Logistics_Officer" && (
+      <>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center gap-3">
@@ -151,13 +162,7 @@ const Assets = () => {
                   Condition
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Maintenance
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Value
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
                 </th>
               </tr>
             </thead>
@@ -223,20 +228,6 @@ const Assets = () => {
                       </div>
                     </td>
 
-                    {/* Actions */}
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors">
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button className="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
                   </tr>
                 );
               })}
@@ -246,23 +237,291 @@ const Assets = () => {
         
         {/* Pagination */}
         <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Showing {filteredAssets.length} of {assestArray.length} assets
+ 
+        </div>
+      </div>
+      </>)}
+      { user?.role==="Admin" && (
+      <>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Package className="w-5 h-5 text-blue-600" />
             </div>
-            <div className="flex items-center gap-2">
-              <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-white transition-colors">
-                Previous
-              </button>
-              <span className="px-3 py-1 text-sm bg-blue-600 text-white rounded">1</span>
-              <button className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-white transition-colors">
-                Next
-              </button>
+            <div>
+              <p className="text-sm text-gray-600">Total Assets</p>
+              <p className="text-xl font-bold text-gray-900">{assestArray.length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Available</p>
+              <p className="text-xl font-bold text-gray-900">
+                {assestArray.filter(a => a.current_status === 'Available').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <User className="w-5 h-5 text-yellow-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Assigned</p>
+              <p className="text-xl font-bold text-gray-900">
+                {assestArray.filter(a => a.current_status === 'Assigned').length}
+              </p>
             </div>
           </div>
         </div>
       </div>
-      
+
+
+      {/* Assets Table */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Asset Details
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Location & Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Quantity
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Condition
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Value
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {assestArray.map((asset) => {
+                return (
+                  <tr key={asset.asset_id} className="hover:bg-gray-50">
+                    
+                    {/* Asset Details */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gray-100 rounded-lg">
+                          <Package className="w-5 h-5 text-gray-600" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{asset.asset_name}</div>
+                          <div className="text-sm text-gray-500">{asset.asset_serial_number}</div>
+              
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Location & Status */}
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 text-sm text-gray-600">
+                          <MapPin className="w-3 h-3" />
+                          {asset.base_name}
+                        </div>
+                        <span className={`inline-flex px-2 py-1 text-xs rounded-full ${getStatusColor(asset.current_status)}`}>
+                          {asset.current_status}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Quantity */}
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="font-medium text-gray-900">{asset.total_quantity} total</div>
+                        <div className="text-sm text-gray-600">
+                          <span className="text-green-600">{asset.available} available</span>
+                          {asset.assigned > 0 && (
+                            <span className="text-blue-600 ml-2">{asset.assigned} assigned</span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Condition */}
+                    <td className="px-6 py-4">
+                      <div className={`font-medium ${getConditionColor(asset.condition_status)}`}>
+                        {asset.condition_status}
+                      </div>
+                    </td>
+
+                    {/* Value */}
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900">
+                        ${asset.purchase_price}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        ${asset.purchase_price/asset.total_quantity}/unit
+                      </div>
+                    </td>
+
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        
+        {/* Pagination */}
+        <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
+
+        </div>
+      </div>
+      </>)}
+      { user?.role==="Base_Commander" && (
+     
+            <>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Package className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Total Assets</p>
+              <p className="text-xl font-bold text-gray-900">{baseAssetArray.length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Available</p>
+              <p className="text-xl font-bold text-gray-900">
+                {baseAssetArray.filter(a => a.current_status === 'Available').length}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <User className="w-5 h-5 text-yellow-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Assigned</p>
+              <p className="text-xl font-bold text-gray-900">
+                {baseAssetArray.filter(a => a.current_status === 'Assigned').length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      {/* Assets Table */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Asset Details
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Location & Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Quantity
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Condition
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Value
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {baseAssetArray.map((asset) => {
+                return (
+                  <tr key={asset.asset_id} className="hover:bg-gray-50">
+                    
+                    {/* Asset Details */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gray-100 rounded-lg">
+                          <Package className="w-5 h-5 text-gray-600" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{asset.asset_name}</div>
+                          <div className="text-sm text-gray-500">{asset.asset_serial_number}</div>
+              
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Location & Status */}
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1 text-sm text-gray-600">
+                          <MapPin className="w-3 h-3" />
+                          {asset.base_name}
+                        </div>
+                        <span className={`inline-flex px-2 py-1 text-xs rounded-full ${getStatusColor(asset.current_status)}`}>
+                          {asset.current_status}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Quantity */}
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="font-medium text-gray-900">{asset.total_quantity} total</div>
+                        <div className="text-sm text-gray-600">
+                          <span className="text-green-600">{asset.available} available</span>
+                          {asset.assigned > 0 && (
+                            <span className="text-blue-600 ml-2">{asset.assigned} assigned</span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Condition */}
+                    <td className="px-6 py-4">
+                      <div className={`font-medium ${getConditionColor(asset.condition_status)}`}>
+                        {asset.condition_status}
+                      </div>
+                    </td>
+
+                    {/* Value */}
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900">
+                        ${asset.purchase_price}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        ${asset.purchase_price/asset.total_quantity}/unit
+                      </div>
+                    </td>
+
+
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        
+      </div>
+      </>
+      )}
     </div>
   );
 };

@@ -1,9 +1,19 @@
 const db= require('../util/db');
 
 exports.createAssignment = async (req, res) => {
+    
     try {
+        console.log(req.body);
         const data = req.body;
-        db.query('INSERT INTO assignments SET ?', data, (err, result) => {
+        const dataNew={
+            base_id: data.base_id,
+           asset_id: data.asset_id,
+           mission: data.mission,
+           user_id: data.user_id,
+           assignment_value: data.assignment_value,
+           assignment_status: data.status
+        }
+        db.query('INSERT INTO assignments SET ?', dataNew, (err, result) => {
             if (err) {
                 console.log('Error creating assignment:', err);
                 return res.status(500).send('Internal Server Error');

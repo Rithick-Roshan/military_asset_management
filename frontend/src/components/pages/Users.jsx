@@ -2,7 +2,7 @@ import {use, useEffect,useState} from 'react';
 import { Users, Eye, Edit, Trash2, Plus, Filter,Shield } from 'lucide-react';
 import axios from 'axios';
 
-const UsersPage = ({setCurrentPage,setBaseId,setUserId}) => {
+const UsersPage = ({setCurrentPage,setBaseId,setUserId,user}) => {
  const [baseDataArray, setBaseDataArray] = useState([]);
  const [usersDataArray, setUsersDataArray] = useState([]); 
  const takeUsersData = async () =>{
@@ -125,10 +125,7 @@ const handleAddBase = () => {
               <h2 className="text-lg font-semibold text-gray-900">User Management</h2>
             </div>
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">
-                <Filter className="w-4 h-4" />
-                Filter
-              </button>
+              {user?.role!=="Logistics_Officer" && (
               <button 
                 onClick={handleAddUser}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
@@ -136,6 +133,7 @@ const handleAddBase = () => {
                 <Plus className="w-4 h-4" />
                 Add New User
               </button>
+              )}
             </div>
           </div>
           
@@ -163,50 +161,52 @@ const handleAddBase = () => {
                   </th>
                 </tr>
               </thead>
+              
+              {user?.role!=="Base_Commander" && (
               <tbody className="bg-white divide-y divide-gray-200">
-                {usersDataArray.map((user) => (
-                  <tr key={user.user_id} className="hover:bg-gray-50">
+                {usersDataArray.map((User) => (
+                  <tr key={User.user_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
                             <span className="text-sm font-medium text-white">
-                              {user.username.split(' ').map(n => n[0]).join('')}
+                              {User.username.split(' ').map(n => n[0]).join('')}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{user.username}</div>
+                          <div className="text-sm font-medium text-gray-900">{User.username}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${getRoleBadgeColor(user.role)}`}>
-                        {user.role}
+                      <span className={`px-2 py-1 text-xs rounded-full ${getRoleBadgeColor(User.role)}`}>
+                        {User.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.base_name}
+                      {User.base_name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.email}
+                      {User.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(user.status)}`}>
-                        {user.status?'Active':'Inactive'}
+                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(User.status)}`}>
+                        {User.status?'Active':'Inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <button 
-                          onClick={() => handleUserEdit(user.user_id)}
+                          onClick={() => handleUserEdit(User.user_id)}
                           className="text-green-600 hover:text-green-900 p-1"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => handleUserDelete(user.user_id)}
+                          onClick={() => handleUserDelete(User.user_id)}
                           className="text-red-600 hover:text-red-900 p-1"
                           title="Delete"
                         >
@@ -217,12 +217,70 @@ const handleAddBase = () => {
                   </tr>
                 ))}
               </tbody>
+              )}
+              {user?.role==="Base_Commander" && (
+              <tbody className="bg-white divide-y divide-gray-200">
+                {usersDataArray.filter(data=>user.base_id===data.base_id).map((User) => (
+                  <tr key={User.user_id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
+                            <span className="text-sm font-medium text-white">
+                              {User.username.split(' ').map(n => n[0]).join('')}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{User.username}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getRoleBadgeColor(User.role)}`}>
+                        {User.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {User.base_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {User.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(User.status)}`}>
+                        {User.status?'Active':'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => handleUserEdit(User.user_id)}
+                          className="text-green-600 hover:text-green-900 p-1"
+                          title="Edit"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleUserDelete(User.user_id)}
+                          className="text-red-600 hover:text-red-900 p-1"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              )}
             </table>
           </div>
         </div>
       </div>
 
        {/* Base Management Section */}
+      {user?.role!=="Base_Commander" && ( 
       <div className="max-w-7xl mx-auto mt-4">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -231,6 +289,7 @@ const handleAddBase = () => {
               <h2 className="text-lg font-semibold text-gray-900">Base Management</h2>
             </div>
             <div className="flex items-center gap-3">
+              {user?.role ==="Admin" && (
               <button 
                 onClick={handleAddBase}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
@@ -238,6 +297,7 @@ const handleAddBase = () => {
                 <Plus className="w-4 h-4" />
                 Add New Base
               </button>
+              )}
             </div>
           </div>
           
@@ -280,24 +340,7 @@ const handleAddBase = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {base.location}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button 
-                          onClick={() => handleBaseEdit(base.base_id)}
-                          className="text-green-600 hover:text-green-900 p-1"
-                          title="Edit"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleBaseDelete(base.base_id)}
-                          className="text-red-600 hover:text-red-900 p-1"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -305,6 +348,7 @@ const handleAddBase = () => {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 };
