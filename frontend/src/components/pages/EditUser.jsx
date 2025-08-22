@@ -102,7 +102,7 @@ const EditUser = ({setCurrentPage,userId,api }) => {
   const handleSubmit = async () => {
     if ( validateForm()){
           try{
-               const response = await axios.put(`${upi}/user/updateuser`,formData);
+               const response = await axios.put(`${api}/user/updateuser`,formData);
                if(response.status === 200){
                  alert("User updated successfully");
                  setFormData(
