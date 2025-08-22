@@ -7,7 +7,7 @@ const UsersPage = ({setCurrentPage,setBaseId,setUserId,user,api}) => {
  const [usersDataArray, setUsersDataArray] = useState([]); 
  const takeUsersData = async () =>{
     try {
-      const response = await axios.get("http://localhost:3000/user/getusers");
+      const response = await axios.get(`${api}/user/getusers`);
       setUsersDataArray(response.data); // update state
       console.log(response.data);
     } catch (err) {
