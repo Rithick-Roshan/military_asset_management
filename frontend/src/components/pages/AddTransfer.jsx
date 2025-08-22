@@ -8,7 +8,7 @@ import {
 
 import axios from 'axios';
 
-const AddTransfer = ({ setCurrentPage, user }) => {
+const AddTransfer = ({ setCurrentPage, user,api }) => {
   const [formData, setFormData] = useState({
     asset_id: '',
     from_base_id: '',
@@ -27,7 +27,7 @@ const AddTransfer = ({ setCurrentPage, user }) => {
   const [showAssetDropdown, setShowAssetDropdown] = useState(false);
     const takeAssetData = async () =>{
      try{
-        const response = await axios.get("http://localhost:3000/asset/getall");
+        const response = await axios.get(`${api}/asset/getall`);
         if(response.status===200){
             setAssets(response.data)
             setFilteredAssets(response.data);
@@ -47,7 +47,7 @@ const AddTransfer = ({ setCurrentPage, user }) => {
 
   const takeBaseData = async ()=>{
        try{
-            const response = await axios.get("http://localhost:3000/user/getbases");
+            const response = await axios.get(`${api}/user/getbases`);
             if(response.status===200){
                 setBases(response.data);
                 console.log("base data fetched"+response.data);
@@ -184,13 +184,13 @@ const AddTransfer = ({ setCurrentPage, user }) => {
            return;
 
       }
-      const responseAsset = await axios.put("http://localhost:3000/asset/updateassetforassignment",selectedAsset);
+      const responseAsset = await axios.put(`${api}/asset/updateassetforassignment`,selectedAsset);
       if(responseAsset.status===200){
                console.log("new asset updated sucesfully");
       }
        
 
-      const response = await axios.post("http://localhost:3000/transfer/create", formData);
+      const response = await axios.post(`${api}/transfer/create`, formData);
       
       if(response.status===200){
             alert('Transfer request submitted successfully!');

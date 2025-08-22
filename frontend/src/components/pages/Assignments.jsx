@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 
-const Assignments = ({setCurrentPage,user}) => {
+const Assignments = ({setCurrentPage,user,api}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedBase, setSelectedBase] = useState('All');
@@ -16,7 +16,7 @@ const Assignments = ({setCurrentPage,user}) => {
 
   const takeAssignmentData = async()=>{
        try{
-            const response = await axios.get("http://localhost:3000/assignment/getall");
+            const response = await axios.get(`${api}/assignment/getall`);
             if(response.status===200){
                 setAssignmentData(response.data);
                 console.log("Assignment fetched sucessfully"+response.data);

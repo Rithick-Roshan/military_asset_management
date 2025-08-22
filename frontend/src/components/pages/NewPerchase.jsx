@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {  Package, Building, AlertCircle, Save, X, Eraser,IndianRupee} from 'lucide-react';
 
-const NewPurchase = ({setCurrentPage,user}) => {
+const NewPurchase = ({setCurrentPage,user,api}) => {
   // Form States
   const [selectedAsset, setSelectedAsset] = useState('');
   const [selectedBase, setSelectedBase] = useState('');
@@ -48,7 +48,7 @@ const NewPurchase = ({setCurrentPage,user}) => {
 
   const takeAssest = async()=>{
         try{
-            const response= await axios.get("http://localhost:3000/asset/getall");
+            const response= await axios.get(`${api}/asset/getall`);
             // setAssetArray(response.data);
             if(response.status ===200){
                 console.log("asset details"+response.data);
@@ -64,7 +64,7 @@ const NewPurchase = ({setCurrentPage,user}) => {
 
   const takeBase = async ()=>{
     try{
-        const response= await axios.get("http://localhost:3000/user/getbases");
+        const response= await axios.get(`${api}/user/getbases`);
         if(response.status ===200){
             console.log("base details"+response.data);
             setBases(response.data);

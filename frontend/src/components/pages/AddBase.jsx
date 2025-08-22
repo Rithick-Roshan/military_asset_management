@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Save, X, Eye, EyeOff, Mail, MapPin, Shield, Phone } from 'lucide-react';
 import axios from 'axios';
-const AddBase = ({setCurrentPage }) => {
+const AddBase = ({setCurrentPage,api }) => {
   const [baseData, setBaseData] = useState({
     base_name: '',
     base_code: '',
@@ -45,7 +45,7 @@ const AddBase = ({setCurrentPage }) => {
     
     if (validateForm()) {
       try{
-       const response = await axios.post("http://localhost:3000/user/createbase",baseData);
+       const response = await axios.post(`${api}/user/createbase`,baseData);
        if(response.status==200){
           alert("Base was created");
        }

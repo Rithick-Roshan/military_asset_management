@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Save, X, Package, Users, MapPin, FileText, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
-const AddAssignment = ({ setCurrentPage , user}) => {
+const AddAssignment = ({ setCurrentPage , user,api}) => {
   const [formData, setFormData] = useState({
     base_id: '',
     asset_id: '',
@@ -22,7 +22,7 @@ const AddAssignment = ({ setCurrentPage , user}) => {
    
   const takeAssetData = async () =>{
      try{
-        const response = await axios.get("http://localhost:3000/asset/getall");
+        const response = await axios.get(`${api}/asset/getall`);
         if(response.status===200){
             setAssetData(response.data);
             console.log("asset recevied data sucessfully ", response.data);
@@ -41,7 +41,7 @@ const AddAssignment = ({ setCurrentPage , user}) => {
 
   const takeBaseData = async ()=>{
        try{
-            const response = await axios.get("http://localhost:3000/user/getbases");
+            const response = await axios.get(`${api}/user/getbases`);
             if(response.status===200){
                 setBaseData(response.data);
                 console.log("base data fetched"+response.data);
@@ -60,7 +60,7 @@ const AddAssignment = ({ setCurrentPage , user}) => {
 
   const takeUserdata = async()=>{
      try{
-         const response = await axios.get("http://localhost:3000/user/getusers");
+         const response = await axios.get(`${api}/user/getusers`);
          if(response.status===200){
             setUserData(response.data);
              console.log("User fetched sucessfully"+response.data);
@@ -160,12 +160,12 @@ const AddAssignment = ({ setCurrentPage , user}) => {
             }
             newAssetData.status=newAssetData.available >(newAssetData.total_quantity/2) ?"Sufficient":"In-sufficient";
             console.log("new asset data "+newAssetData.available);
-            const responseAsset = await axios.put("http://localhost:3000/asset/updateassetforassignment",newAssetData);
+            const responseAsset = await axios.put(`${api}/asset/updateassetforassignment`,newAssetData);
             if(responseAsset.status===200){
                console.log("new asset updated sucesfully");
             }
 
-            const response = await axios.post("http://localhost:3000/assignment/create", formData);
+            const response = await axios.post(`${api}/assignment/create`, formData);
             if (response.status === 200) {
                 alert("Assignment created successfully");
             }

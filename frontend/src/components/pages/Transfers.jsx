@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios'; 
 
-const Transfers = ({setCurrentPage,user}) => {
+const Transfers = ({setCurrentPage,user,api}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedFromBase, setSelectedFromBase] = useState('All');
@@ -17,13 +17,13 @@ const Transfers = ({setCurrentPage,user}) => {
 
 const takeTransferData = async () => {
   try {
-    const response = await axios.get("http://localhost:3000/transfer/getall");
+    const response = await axios.get(`${api}/transfer/getall`);
     if (response.status === 200) {
       setTransferData(response.data);
       console.log("Transfer data fetched successfully", response.data[0]?.asset_name);
     }
     
-    const responsebase = await axios.get("http://localhost:3000/user/getbases")
+    const responsebase = await axios.get(`${api}/user/getbases`)
     if(responsebase.status===200){
       setBaseData(responsebase.data);
       console.log("Base data fetched sucessfully"+responsebase.data);

@@ -26,6 +26,8 @@ function App() {
   const [userId, setUserId] = useState(null);
   const [user, setUser] = useState(null);
 
+  const api="https://military-asset-management-backend-1qc6.onrender.com";
+
   // Check for existing token on app load
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -61,7 +63,7 @@ function App() {
   }
 
   if (!isLoggedIn || setCurrentPage==="Login") {
-    return <Login handeleLoginSystem={handeleLoginSystem}  />
+    return <Login handeleLoginSystem={handeleLoginSystem} api={api} />
   }
 
   return (
@@ -72,6 +74,7 @@ function App() {
         isSidebarOpen={isSidebarOpen} 
         setSidebarOpen={setSidebarOpen}
         handleLogout={handleLogout}
+
       />
       <Header 
         currentPage={currentPage}
@@ -80,20 +83,20 @@ function App() {
         user={user}
         handleLogout={handleLogout}
       />
-      {currentPage === "home" && <HomeDashboard setCurrentPage={setCurrentPage} user={user} />}
-      {currentPage === "assets" && <Assets setCurrentPage={setCurrentPage} user={user} />}
-      {currentPage === "purchases" && <Purchases setCurrentPage={setCurrentPage} user={user} />}
-      {currentPage === "assignments" && <Assignments setCurrentPage={setCurrentPage} user={user} />}
-      {currentPage === "users" && <UsersPage setCurrentPage={setCurrentPage} setBaseId={setBaseId} setUserId={setUserId} user={user} />}
-      {currentPage === "addUser" && <AddUser setCurrentPage={setCurrentPage} user={user}/>}
-      {currentPage === "addBase" && <AddBase setCurrentPage={setCurrentPage} user={user} />}
-      {currentPage === "editBase" && <EditBase setCurrentPage={setCurrentPage} baseId={baseId} user={user}/>}
-      {currentPage === "editUser" && <EditUser setCurrentPage={setCurrentPage} userId={userId}  user={user}/>}
-      {currentPage === "newPurchase" && <NewPurchase setCurrentPage={setCurrentPage} user={user}/>}
-      {currentPage === "addAssignment" && <AddAssignment setCurrentPage={setCurrentPage} user={user}/>}
-      {currentPage === "transfers" && <Transfers setCurrentPage={setCurrentPage} user={user} />}
-      {currentPage === "addTransfer" && <AddTransfer setCurrentPage={setCurrentPage} user={user} />}
-      {currentPage==="addAsset" && <AddAsset setCurrentPage={setCurrentPage} user={user} />}
+      {currentPage === "home" && <HomeDashboard setCurrentPage={setCurrentPage} user={user} api={api} />}
+      {currentPage === "assets" && <Assets setCurrentPage={setCurrentPage} user={user} api={api} />}
+      {currentPage === "purchases" && <Purchases setCurrentPage={setCurrentPage} user={user} api={api} />}
+      {currentPage === "assignments" && <Assignments setCurrentPage={setCurrentPage} user={user} api={api} />}
+      {currentPage === "users" && <UsersPage setCurrentPage={setCurrentPage} setBaseId={setBaseId} setUserId={setUserId} user={user} api={api} />}
+      {currentPage === "addUser" && <AddUser setCurrentPage={setCurrentPage} user={user} api={api} />}
+      {currentPage === "addBase" && <AddBase setCurrentPage={setCurrentPage} user={user} api={api} />}
+      {currentPage === "editBase" && <EditBase setCurrentPage={setCurrentPage} baseId={baseId} user={user} api={api}/>}
+      {currentPage === "editUser" && <EditUser setCurrentPage={setCurrentPage} userId={userId}  user={user} api={api}/>}
+      {currentPage === "newPurchase" && <NewPurchase setCurrentPage={setCurrentPage} user={user} api={api}/>}
+      {currentPage === "addAssignment" && <AddAssignment setCurrentPage={setCurrentPage} user={user} api={api}/>}
+      {currentPage === "transfers" && <Transfers setCurrentPage={setCurrentPage} user={user} api={api}/>}
+      {currentPage === "addTransfer" && <AddTransfer setCurrentPage={setCurrentPage} user={user} api={api} />}
+      {currentPage==="addAsset" && <AddAsset setCurrentPage={setCurrentPage} user={user} api={api}/>}
     </>
   )
 }

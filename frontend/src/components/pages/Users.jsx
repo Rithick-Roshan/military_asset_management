@@ -2,7 +2,7 @@ import {use, useEffect,useState} from 'react';
 import { Users, Eye, Edit, Trash2, Plus, Filter,Shield } from 'lucide-react';
 import axios from 'axios';
 
-const UsersPage = ({setCurrentPage,setBaseId,setUserId,user}) => {
+const UsersPage = ({setCurrentPage,setBaseId,setUserId,user,api}) => {
  const [baseDataArray, setBaseDataArray] = useState([]);
  const [usersDataArray, setUsersDataArray] = useState([]); 
  const takeUsersData = async () =>{
@@ -26,7 +26,7 @@ const UsersPage = ({setCurrentPage,setBaseId,setUserId,user}) => {
 
   const takeBaseData = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/user/getbases");
+      const response = await axios.get(`${api}/user/getbases`);
       setBaseDataArray(response.data); // update state
       console.log(response.data);
     } catch (err) {
@@ -57,7 +57,7 @@ const UsersPage = ({setCurrentPage,setBaseId,setUserId,user}) => {
   const handleUserDelete = async (user_id) => {
     console.log('Delete user:', user_id);
     try{
-        const response = await axios.delete(`http://localhost:3000/user/deleteuser`,{data:{user_id}});
+        const response = await axios.delete(`${api}/user/deleteuser`,{data:{user_id}});
         if(response.status === 200){
             alert('User deleted successfully');
             takeUsersData(); 
@@ -84,7 +84,7 @@ const handleAddBase = () => {
   const handleBaseDelete = async (base_id) => {
     console.log('Delete user:', base_id);
     try{
-        const response = await axios.delete(`http://localhost:3000/user/deletebase`,{data:{base_id}});
+        const response = await axios.delete(`${api}/user/deletebase`,{data:{base_id}});
         if(response.status === 200){
             alert('Base deleted successfully');
             takeBaseData(); 

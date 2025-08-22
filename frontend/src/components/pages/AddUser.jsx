@@ -2,7 +2,7 @@ import React, { useState ,useEffect} from 'react';
 import axios from 'axios';
 import { User, Save, X, Eye, EyeOff, Mail, MapPin, Shield, Phone } from 'lucide-react';
 
-const AddUser = ({setCurrentPage,user }) => {
+const AddUser = ({setCurrentPage,user,api }) => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -16,7 +16,7 @@ const AddUser = ({setCurrentPage,user }) => {
    const [baseDataArray, setBaseDataArray] = useState([]);
    const takeBaseData = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/user/getbases");
+      const response = await axios.get(`${api}/user/getbases`);
       setBaseDataArray(response.data); // update state
       console.log(response.data);
     } catch (err) {
@@ -101,7 +101,7 @@ const AddUser = ({setCurrentPage,user }) => {
   const handleSubmit = async () => {
     if ( validateForm()){
           try{
-               const response = await axios.post("http://localhost:3000/user/register",formData);
+               const response = await axios.post(`${api}/user/register`,formData);
                if(response.status === 200){
                  alert("User created successfully");
                  setFormData(

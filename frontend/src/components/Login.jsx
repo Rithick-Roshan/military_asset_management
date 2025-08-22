@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-const Login = ({ handeleLoginSystem}) => {
+const Login = ({ handeleLoginSystem,api}) => {
     const [user, setUser] = useState({
         email: '',
         password: ''
@@ -19,7 +19,7 @@ const Login = ({ handeleLoginSystem}) => {
 
             setLoading(true);
             
-            const response = await axios.post('http://localhost:3000/user/login', user);
+            const response = await axios.post(`${api}/user/login`, user);
             
             if (response.status === 200 && response.data.success) {
                 console.log(response.data.user.user_id);

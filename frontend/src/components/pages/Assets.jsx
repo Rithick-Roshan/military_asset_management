@@ -7,7 +7,7 @@ import {
   UserStar
 } from 'lucide-react';
 
-const Assets = ({setCurrentPage,user}) => {
+const Assets = ({setCurrentPage,user,api}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedBase, setSelectedBase] = useState('All');
@@ -17,7 +17,7 @@ const Assets = ({setCurrentPage,user}) => {
 
   const takeAssest = async () =>{
     try{
-        const response = await axios.get("http://localhost:3000/asset/getall");
+        const response = await axios.get(`${api}/asset/getall`);
         if(response.status === 200){
           setAssestArray(response.data);
 

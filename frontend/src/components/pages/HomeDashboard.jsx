@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
-const HomeDashboard = ({setCurrentPage,user}) => {
+const HomeDashboard = ({setCurrentPage,user,api}) => {
   const [assetData, setAssetData] = useState([]);
   const [transferData, setTransferData] = useState([]);
   const [purchaseData, setPurchaseData] = useState([]);
@@ -54,7 +54,7 @@ const HomeDashboard = ({setCurrentPage,user}) => {
 
   const takeAssets = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/asset/getall");
+      const response = await axios.get(`${api}/asset/getall`);
       if (response.status === 200) {
         console.log("Assets fetched successfully", response.data);
         setAssetData(response.data);
@@ -66,7 +66,7 @@ const HomeDashboard = ({setCurrentPage,user}) => {
 
   const takeTransferData = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/transfer/getall");
+      const response = await axios.get(`${api}/transfer/getall`);
       if (response.status === 200) {
         setTransferData(response.data);
         console.log("Transfer data fetched successfully", response.data);
@@ -78,7 +78,7 @@ const HomeDashboard = ({setCurrentPage,user}) => {
 
   const takePurchaseData = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/purchase/getall");
+      const response = await axios.get(`${api}/purchase/getall`);
       if (response.status === 200) {
         console.log("Purchase data fetched successfully", response.data);
         setPurchaseData(response.data);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Save, X, Eye, EyeOff, Mail, MapPin, Shield, Phone } from 'lucide-react';
 import axios from 'axios';
-const EditBase = ({setCurrentPage,baseId }) => {
+const EditBase = ({setCurrentPage,baseId,api }) => {
   const [baseData, setBaseData] = useState({
     base_id: baseId,
     base_name: '',
@@ -46,7 +46,7 @@ console.log("edit base id" +baseId);
     
     if (validateForm()) {
       try{
-       const response = await axios.put("http://localhost:3000/user/updatebase",baseData);
+       const response = await axios.put(`${api}/user/updatebase`,baseData);
        if(response.status==200){
           alert("Base was updated");
        }

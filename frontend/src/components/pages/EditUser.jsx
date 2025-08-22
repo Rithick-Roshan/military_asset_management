@@ -2,7 +2,7 @@ import React, { useState ,useEffect} from 'react';
 import axios from 'axios';
 import { User, Save, X, Eye, EyeOff, Mail, MapPin, Shield, Phone } from 'lucide-react';
 
-const EditUser = ({setCurrentPage,userId }) => {
+const EditUser = ({setCurrentPage,userId,api }) => {
   const [formData, setFormData] = useState({
     user_id:userId,
     username: '',
@@ -17,7 +17,7 @@ const EditUser = ({setCurrentPage,userId }) => {
    const [baseDataArray, setBaseDataArray] = useState([]);
    const takeBaseData = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/user/getbases");
+      const response = await axios.get(`${api}/user/getbases`);
       setBaseDataArray(response.data); // update state
       console.log(response.data);
     } catch (err) {

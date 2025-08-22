@@ -9,7 +9,7 @@ import {
   IndianRupee
 } from 'lucide-react';
 
-const Purchases = ({setCurrentPage,user}) => {
+const Purchases = ({setCurrentPage,user,api}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [selectedBase, setSelectedBase] = useState('All');
@@ -18,7 +18,7 @@ const Purchases = ({setCurrentPage,user}) => {
 
   const takePurchaseData = async () =>{
        try{ 
-           const response = await axios.get("http://localhost:3000/purchase/getall");
+           const response = await axios.get(`${api}/purchase/getall`);
            if(response.status===200){
                console.log("backend purchae data "+response.data);
                setPurchaseData(response.data);
